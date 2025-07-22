@@ -1,72 +1,50 @@
-
 const express = require('express');
-const { getMealPlanSchema } = require('../lib/schemas/mealPlan');
+const openaiClient = require('../lib/openaiClient');
+const { buildPrompt } = require('../lib/buildPrompt');
+const { checkAllergenConflicts } = require('../lib/guardRails');
 
 const router = express.Router();
 
-// Hard-coded responses for R1
-const HARD_CODED_MEAL_PLAN = {
-  breakfast: [
-    {
-      food: "Oatmeal with berries",
-      calories: 300,
-      protein: 8,
-      carbs: 54,
-      fat: 6
-    }
-  ],
-  lunch: [
-    {
-      food: "Grilled chicken salad",
-      calories: 450,
-      protein: 35,
-      carbs: 15,
-      fat: 28
-    }
-  ],
-  dinner: [
-    {
-      food: "Salmon with quinoa",
-      calories: 520,
-      protein: 40,
-      carbs: 35,
-      fat: 22
-    }
-  ],
-  snacks: [
-    {
-      food: "Greek yogurt",
-      calories: 150,
-      protein: 15,
-      carbs: 12,
-      fat: 5
-    }
-  ]
-};
-
-const HARD_CODED_MOTIVATION = "Keep going! 💪 You're making great progress towards your nutrition goals. Every healthy choice counts!";
-
-router.post('/chat', (req, res) => {
+router.post('/chat', async (req, res) => {
   try {
     const { mode, userId, messages, context } = req.body;
-    
+
     // Default to meal_plan_strict if mode not provided
     const chatMode = mode || 'meal_plan_strict';
-    
-    if (chatMode === 'goal_motivation') {
-      return res.json({
-        role: 'assistant',
-        content: HARD_CODED_MOTIVATION
-      });
-    } else {
-      // Default to meal_plan_strict mode
-      return res.json({
-        role: 'assistant',
-        content: HARD_CODED_MEAL_PLAN
+
+    // Build prompt based on mode
+    const promptData = buildPrompt(chatMode, messages, context);
+
+    // Call OpenAI
+    const response = await openaiClient.completion(
+      promptData.messages,
+      promptData.temperature,
+      promptData.functions
+    );
+
+    // Check for allergen/medication conflicts
+    const guardCheck = checkAllergenConflicts(
+      response.content, 
+      context?.allergies, 
+      context?.medications
+    );
+
+    if (!guardCheck.safe) {
+      return res.status(422).json({ 
+        error: guardCheck.violation,
+        details: guardCheck.details 
       });
     }
+
+    return res.json(response);
+
   } catch (error) {
     console.error('Chat endpoint error:', error);
+
+    if (error.message === 'UPSTREAM_ERROR') {
+      return res.status(500).json({ error: 'UPSTREAM_ERROR' });
+    }
+
     res.status(500).json({ error: 'Internal server error' });
   }
 });
