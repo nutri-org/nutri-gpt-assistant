@@ -1,0 +1,35 @@
+### Context
+• Goal R2 fix‑suite: all unit tests in `tests/chat.test.js` must pass again.  
+• Root cause: our previous `jest.mock('../server/lib/openaiClient')` call was placed **after** `server/server.js` (and therefore the real module had already executed).  
+• Diagnostics confirm this: the trace logs show “★ Real openaiClient.js is executing”.  
+• Solution strategy: **hoist** the mocks (place them at the very top of the test file) so Jest registers them before any modules are imported.  
+• While we are in there we’ll also remove the temporary console‑log diagnostics to keep the repo clean.
+
+### Step 0 – sanity‑check / ask for objections
+Before you touch any code, double‑check and answer **briefly**:
+1. Do you see any risk that hoisting `jest.mock('../server/lib/openaiClient')` will break the test runner or create circular dependencies?  
+2. Any objection to deleting the temporary trace `console.log` lines we added in `tests/chat.test.js` and `server/lib/openaiClient.js`?  
+3. Do you foresee any easier way to achieve the same result?
+
+If you have concerns, stop and tell me.  
+Otherwise reply **“Approved – ready to implement R2 hoisted‑mocks”**.
+
+### Step 1 – implementation (only after approval)
+1. **Clean‑up diagnostics**  
+   • Remove the three trace lines we added at the very top of `tests/chat.test.js`.  
+   • Remove the line `console.log('★ Real openaiClient.js is executing');` from `server/lib/openaiClient.js`.  
+
+2. **Hoist and rewrite mocks in `tests/chat.test.js`**  
+   Place the following three mock blocks **before any other imports** (top of file):
+
+```js
+// --- jest mocks (hoisted) ---------------------------------
+jest.mock('../server/lib/openaiClient', () => ({
+  // the route expects { role, content } already unwrapped
+  completion: jest.fn().mockResolvedValue({ role: 'assistant', content: { dummy: true } })
+}));
+
+jest.mock('../server/lib/guardRails', () => ({
+  checkAllergenConflicts: jest.fn().mockReturnValue({ safe: true })
+}));
+// -----------------------------------------------------------

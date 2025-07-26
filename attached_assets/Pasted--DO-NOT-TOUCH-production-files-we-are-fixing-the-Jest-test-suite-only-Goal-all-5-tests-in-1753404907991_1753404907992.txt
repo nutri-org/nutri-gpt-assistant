@@ -1,0 +1,82 @@
+# ❌ DO NOT TOUCH production files — we are fixing the Jest test‑suite only
+# ✅ Goal: all 5 tests in tests/chat.test.js pass without executing the real openaiClient
+
+## 1 Remove TEMP debug logs
+- Delete the first 3 console.log lines in tests/chat.test.js
+- Delete the console.log line in server/lib/openaiClient.js
+
+## 2 Replace all mocks with one hoisted block at the very top of tests/chat.test.js
+```js
+// --- jest mocks (hoisted) -----------------------------------------------
+jest.mock('../server/lib/openaiClient', () => ({
+  completion: jest.fn(),          // we will configure per–test
+}));
+
+jest.mock('../server/lib/guardRails', () => ({
+  checkAllergenConflicts: jest.fn().mockReturnValue({ safe: true }), // default
+}));
+// -------------------------------------------------------------------------
+3 Delete ALL code that used the old OpenAI SDK mock
+Remove the entire jest.mock('openai', …) block
+
+Remove the const OpenAI = require('openai') & new OpenAI() lines
+
+Remove createMockResponse helper (no longer needed)
+
+Delete every assertion that references mockOpenAI.chat.completions.create
+and replace it with assertions on openaiClient.completion
+
+4 Import the mocks you just declared
+js
+Copy
+const openaiClient = require('../server/lib/openaiClient');
+const { checkAllergenConflicts } = require('../server/lib/guardRails');
+5 beforeEach – clear & set sane defaults
+js
+Copy
+beforeEach(() => {
+  jest.clearAllMocks();
+  openaiClient.completion.mockResolvedValue({
+    role: 'assistant',
+    content: 'dummy default',
+  });
+  checkAllergenConflicts.mockReturnValue({ safe: true });
+});
+6 Per‑test mock behaviour
+a) “meal_plan_strict returns 200”
+js
+Copy
+const mockMealPlan = { breakfast:[{food:'Oats',calories:200}], lunch:[], dinner:[], snacks:[] };
+openaiClient.completion.mockResolvedValue({ role:'assistant', content: mockMealPlan });
+Expect response.status === 200
+
+Expect response.body.content toHaveProperty 'breakfast' etc.
+
+Expect openaiClient.completion toHaveBeenCalledWith(
+expect.any(Array), 0.1, expect.any(Array))
+
+b) “goal_motivation returns 200”
+js
+Copy
+openaiClient.completion.mockResolvedValue({ role:'assistant', content: 'Stay strong!' });
+Expect typeof response.body.content === 'string'
+
+c) “allergen conflict returns 422”
+js
+Copy
+checkAllergenConflicts.mockReturnValue({ safe:false, conflict:'peanuts' });
+Expect HTTP 422 & body.error === 'ALLERGEN_CONFLICT'
+
+d) “upstream error returns 500”
+js
+Copy
+openaiClient.completion.mockRejectedValue(new Error('UPSTREAM_ERROR'));
+Expect HTTP 500 & body.error === 'UPSTREAM_ERROR'
+
+e) “default mode falls back to strict”
+Same mock as (a) but omit mode in the request body.
+
+7 Run the tests
+bash
+Copy
+npm test --watchAll=false

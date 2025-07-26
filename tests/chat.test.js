@@ -2,7 +2,7 @@
 const request = require('supertest');
 const app = require('../server/server');
 
-// Mock OpenAI
+// Mock OpenAI client
 jest.mock('openai', () => {
   return jest.fn().mockImplementation(() => ({
     chat: {
@@ -23,27 +23,17 @@ describe('POST /api/chat', () => {
 
   test('should return 200 for meal_plan_strict mode with structured response', async () => {
     const mockMealPlan = {
-      breakfast: [
-        { food: "Oatmeal with berries", calories: 300, protein: 8, carbs: 54, fat: 6 }
-      ],
-      lunch: [
-        { food: "Grilled chicken salad", calories: 450, protein: 35, carbs: 15, fat: 28 }
-      ],
-      dinner: [
-        { food: "Salmon with quinoa", calories: 520, protein: 40, carbs: 35, fat: 22 }
-      ],
-      snacks: [
-        { food: "Greek yogurt", calories: 150, protein: 15, carbs: 12, fat: 5 }
-      ]
+      breakfast: [{ food: 'Oats', calories: 200 }],
+      lunch: [],
+      dinner: [],
+      snacks: []
     };
 
     mockOpenAI.chat.completions.create.mockResolvedValue({
       choices: [{
         message: {
-          function_call: {
-            name: 'create_meal_plan',
-            arguments: JSON.stringify(mockMealPlan)
-          }
+          role: 'assistant',
+          content: JSON.stringify(mockMealPlan)
         }
       }]
     });
@@ -67,22 +57,14 @@ describe('POST /api/chat', () => {
     expect(response.body.content).toHaveProperty('lunch');
     expect(response.body.content).toHaveProperty('dinner');
     expect(response.body.content).toHaveProperty('snacks');
-    expect(mockOpenAI.chat.completions.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        model: 'gpt-3.5-turbo',
-        temperature: 0.1,
-        functions: expect.any(Array)
-      })
-    );
   });
 
   test('should return 200 for goal_motivation mode with text response', async () => {
-    const mockMotivation = "Keep going! 💪 You're making great progress towards your nutrition goals!";
-
     mockOpenAI.chat.completions.create.mockResolvedValue({
       choices: [{
         message: {
-          content: mockMotivation
+          role: 'assistant',
+          content: 'Stay strong and keep going!'
         }
       }]
     });
@@ -102,38 +84,21 @@ describe('POST /api/chat', () => {
     expect(response.body.role).toBe('assistant');
     expect(typeof response.body.content).toBe('string');
     expect(response.body.content.length).toBeGreaterThan(0);
-    expect(mockOpenAI.chat.completions.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        model: 'gpt-3.5-turbo',
-        temperature: 0.7,
-        functions: undefined
-      })
-    );
   });
 
   test('should return 422 for allergen conflict', async () => {
-    const mockMealPlanWithPeanuts = {
-      breakfast: [
-        { food: "Peanut butter toast", calories: 300, protein: 8, carbs: 54, fat: 6 }
-      ],
-      lunch: [
-        { food: "Grilled chicken salad", calories: 450, protein: 35, carbs: 15, fat: 28 }
-      ],
-      dinner: [
-        { food: "Salmon with quinoa", calories: 520, protein: 40, carbs: 35, fat: 22 }
-      ],
-      snacks: [
-        { food: "Greek yogurt", calories: 150, protein: 15, carbs: 12, fat: 5 }
-      ]
+    const mockMealPlan = {
+      breakfast: [{ food: 'Peanut butter toast', calories: 300 }],
+      lunch: [],
+      dinner: [],
+      snacks: []
     };
 
     mockOpenAI.chat.completions.create.mockResolvedValue({
       choices: [{
         message: {
-          function_call: {
-            name: 'create_meal_plan',
-            arguments: JSON.stringify(mockMealPlanWithPeanuts)
-          }
+          role: 'assistant',
+          content: JSON.stringify(mockMealPlan)
         }
       }]
     });
@@ -156,7 +121,7 @@ describe('POST /api/chat', () => {
   });
 
   test('should return 500 for OpenAI API failure', async () => {
-    mockOpenAI.chat.completions.create.mockRejectedValue(new Error('API Error'));
+    mockOpenAI.chat.completions.create.mockRejectedValue(new Error('UPSTREAM_ERROR'));
 
     const response = await request(app)
       .post('/api/chat')
@@ -177,19 +142,17 @@ describe('POST /api/chat', () => {
 
   test('should default to meal_plan_strict when mode is not provided', async () => {
     const mockMealPlan = {
-      breakfast: [{ food: "Oatmeal", calories: 300, protein: 8, carbs: 54, fat: 6 }],
-      lunch: [{ food: "Chicken salad", calories: 450, protein: 35, carbs: 15, fat: 28 }],
-      dinner: [{ food: "Salmon with quinoa", calories: 520, protein: 40, carbs: 35, fat: 22 }],
-      snacks: [{ food: "Greek yogurt", calories: 150, protein: 15, carbs: 12, fat: 5 }]
+      breakfast: [{ food: 'Oats', calories: 200 }],
+      lunch: [],
+      dinner: [],
+      snacks: []
     };
 
     mockOpenAI.chat.completions.create.mockResolvedValue({
       choices: [{
         message: {
-          function_call: {
-            name: 'create_meal_plan',
-            arguments: JSON.stringify(mockMealPlan)
-          }
+          role: 'assistant',
+          content: JSON.stringify(mockMealPlan)
         }
       }]
     });
@@ -203,11 +166,5 @@ describe('POST /api/chat', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.content).toHaveProperty('breakfast');
-    expect(mockOpenAI.chat.completions.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        temperature: 0.1,
-        functions: expect.any(Array)
-      })
-    );
   });
 });

@@ -1,0 +1,55 @@
+# Context
+• We’re still on Milestone R2.  
+• Earlier defensive‑code changes compile, but **tests now fail** and the Preview tab still shows “Cannot GET /”.
+• Root causes observed:
+  1. `tests/chat.test.js` has stray Markdown text (“The changes involve…”) at the very top – Jest can’t parse it.
+  2. Our OpenAI mock inside that test file is still incomplete; each happy‑path stub must return an object that has `choices: [{ message: { role:'assistant', content:'…' } }]`.
+  3. Server lacks a root “/” route (needed only for the Preview panel). API itself works.
+
+# Goals for this fix (please review & raise objections before you code)
+1️⃣  **Clean test file**  
+    • Strip any non‑JS commentary / code‑fence lines that crept into `tests/chat.test.js`.  
+    • Make sure the file starts with:  
+      ```js
+      const request = require('supertest');
+      const app = require('../server/server');   // or the correct path
+      jest.mock('../lib/openaiClient', () => ({ completion: jest.fn() }));
+      ```
+2️⃣  **Robust OpenAI mocks**  
+    • In each happy‑path test case, mock should resolve to  
+      ```js
+      { choices: [{ message: { role: 'assistant', content: 'stubbed response' } }] }
+      ```  
+    • For malformed cases, deliberately return `{}` or `{ choices: [] }` so our null‑checks trigger a 500.
+3️⃣  **Confirm failing‑forward logic**  
+    • Re‑run `npm test`; expect **all five tests to pass**:
+      – 2× 200 OK cases  
+      – 1× 422 ALLERGEN_CONFLICT  
+      – 2× 500 UPSTREAM_ERROR (one from bad mock, one from explicit throw)
+    • If any still fail, output full error lines so we can decide whether to tighten mocks or route logic.
+4️⃣  **Add root route (Preview only)**  
+    • In `server/server.js` (or routes file) add:  
+      ```js
+      app.get('/', (_req, res) => res.send('Nutri‑GPT assistant is running'));
+      ```  
+      _No JSON, no auth, just text._
+    • Ensure server listens on  
+      ```js
+      const PORT = process.env.PORT || 5000;
+      app.listen(PORT, '0.0.0.0', …);
+      ```
+    • Verify the `.replit` run cmd is still `npm start`.
+5️⃣  **Docs / logs**  
+    • Append a short incident note under `docs/errors-log/jest_parse_failure.md`:
+      - Symptom, root cause (markdown injected), resolution.
+6️⃣  **Leave everything unstaged** for my manual commit.
+
+# Deliverables checklist
+- [ ] `tests/chat.test.js` cleaned & mocks fixed.  
+- [ ] All `npm test` cases green (agent should paste the summary).  
+- [ ] Root `/` route returns text; Preview tab shows the message.  
+- [ ] New error‑log MD added.  
+- [ ] No files staged or committed.
+
+👉 **Before you code:** confirm there’s no simpler way or hidden conflict.  
+If the plan looks good, implement exactly the steps above.

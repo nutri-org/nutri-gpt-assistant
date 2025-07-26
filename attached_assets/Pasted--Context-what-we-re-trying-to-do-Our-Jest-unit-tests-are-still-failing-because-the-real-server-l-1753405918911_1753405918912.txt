@@ -1,0 +1,92 @@
+🟡 Context (what we’re trying to do)
+Our Jest unit‑tests are still failing because the real server/lib/openaiClient.js is executed instead of a mock.
+The route under test expects openaiClient.completion() to return an already‑processed object:
+
+js
+Copy
+{ role: 'assistant', content: <string | object> }
+So we must:
+
+Hoist a Jest mock for ../server/lib/openaiClient and ../server/lib/guardRails at the top of tests/chat.test.js.
+
+Remove every trace of the old OpenAI‑SDK mock and helper createMockResponse.
+
+Configure the mock per test so each scenario returns exactly the data the route handler expects.
+
+Make no changes to production code.
+
+Leave all edits unstaged so MZ can review and commit.
+
+🟡 Possible conflicts / risks – please confirm
+File path ../server/lib/openaiClient is correct for tests/chat.test.js – do you agree?
+
+No other test files import the old SDK mock – confirm.
+
+The new mock return‑values match the route’s defensive checks – confirm.
+
+If you see any problem, point it out before touching the code.
+
+🟢 If no objections, implement exactly one milestone:
+Milestone R2‑test‑fix‑hoisted‑mocks
+
+Clean up tests/chat.test.js
+
+Delete the three temporary console.log lines at the top.
+
+Delete the entire old OpenAI SDK mock block and its createMockResponse helper.
+
+Add hoisted mocks (top of file, before any require)
+
+js
+Copy
+// --- jest mocks (hoisted) -----------------------------------
+jest.mock('../server/lib/openaiClient', () => ({
+  // will be configured in each test
+  completion: jest.fn(),
+}));
+
+jest.mock('../server/lib/guardRails', () => ({
+  checkAllergenConflicts: jest.fn().mockReturnValue({ safe: true }),
+}));
+// -------------------------------------------------------------
+Import the mocks for configuration
+
+js
+Copy
+const openaiClient = require('../server/lib/openaiClient');
+const { checkAllergenConflicts } = require('../server/lib/guardRails');
+Replace the old beforeEach with
+
+js
+Copy
+beforeEach(() => {
+  jest.clearAllMocks();
+  openaiClient.completion.mockResolvedValue({ role: 'assistant', content: { dummy: true } });
+  checkAllergenConflicts.mockReturnValue({ safe: true });
+});
+Update each test block
+
+Test	What to configure inside the test
+meal_plan_strict	openaiClient.completion.mockResolvedValue({ role:'assistant', content: mockMealPlan });
+goal_motivation	openaiClient.completion.mockResolvedValue({ role:'assistant', content: 'Stay strong!' });
+allergen conflict	checkAllergenConflicts.mockReturnValue({ safe:false, violation:'ALLERGEN_CONFLICT' }); (return any mock meal plan in completion)
+upstream error	openaiClient.completion.mockRejectedValue(new Error('UPSTREAM_ERROR'));
+default mode	same pattern as meal_plan_strict
+
+Also replace old expect(mockOpenAI.chat.completions.create)… assertions with
+expect(openaiClient.completion).toHaveBeenCalledWith(expect.any(Array), 0.1, expect.any(Array));
+etc., so they match the handler’s signature.
+
+Remove the temporary console log in server/lib/openaiClient.js (★ Real openaiClient.js is executing) – production file content remains identical.
+
+Run npm test --watchAll=false; all 5 tests should pass.
+
+Leave every change unstaged; do not commit.
+
+✅ Deliverables
+Edited tests/chat.test.js only.
+
+Console output of the Jest run (pass/fail).
+
+Note any unexpected issues in a new incident log under docs/errors-log/yyyymmdd_jest_mock_fix.md if tests still fail.
+

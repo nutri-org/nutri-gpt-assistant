@@ -1,0 +1,73 @@
+--- tests/chat.test.js  (after reset)
++++ tests/chat.test.js  (patched)
+
+@@
+-// --- jest mocks (hoisted) --------------------------------------------------
+-jest.mock('../server/lib/openaiClient', () => ({
+-  completion: jest.fn(),            // we will configure per‑test
+-}));
+-
+-jest.mock('../server/lib/guardRails', () => ({
+-  checkAllergenConflicts: jest.fn().mockReturnValue({ safe: true }),   // default
+-}));
+-
+-// ---------------------------------------------------------------------------
++// ─── HOISTED MODULE MOCKS ───────────────────────────────────────────────────
++jest.mock('../server/lib/openaiClient', () => ({
++  completion: jest.fn(),                     // configured inside each test
++}));
++
++jest.mock('../server/lib/guardRails', () => ({
++  checkAllergenConflicts: jest.fn().mockReturnValue({ safe: true }),  // default
++}));
++
++// ────────────────────────────────────────────────────────────────────────────
+@@
+-// Mock OpenAI SDK (OLD)  ⟵ REMOVE COMPLETELY
+-jest.mock('openai', () => { ... });
+-const OpenAI  = require('openai');
+-const mockOpenAI = new OpenAI();
+-
+-// Helper createMockResponse (OLD)  ⟵ REMOVE COMPLETELY
+-const createMockResponse = (...) => { ... };
+-
+-/* every block that calls mockOpenAI.chat.completions.create(...) or
+-   expects(mockOpenAI.chat.completions.create)...   ⟵ DELETE */
++// REMOVE EVERYTHING ABOVE – we do not mock the upstream SDK any more.
+@@
+-beforeEach(() => {
+-  jest.clearAllMocks();
+-  openaiClient.completion.mockResolvedValue({   // ❌ dummy default – delete
+-     role:'assistant', content:{ dummy:true }
+-  });
+-});
++beforeEach(() => {
++  jest.clearAllMocks();          // keep
++  // NO default implementation – every test sets its own.
++});
+@@  (meal_plan_strict test – first test case)
+-  openaiClient.completion.mockResolvedValue({
+-    role:'assistant', content: mockMealPlan
+-  });
++  openaiClient.completion.mockResolvedValueOnce({
++    role:'assistant',
++    content: mockMealPlan,
++  });
+@@ (goal_motivation test)
+-  openaiClient.completion.mockResolvedValue({
++  openaiClient.completion.mockResolvedValueOnce({
+      role:'assistant',
+      content: 'Stay strong!',
+   });
+@@ (allergen test)
+-  checkAllergenConflicts.mockReturnValue({ safe:false, violation:'ALLERGEN_CONFLICT' });
++  checkAllergenConflicts.mockReturnValueOnce({ safe:false, violation:'ALLERGEN_CONFLICT' });
+@@ (upstream‑error test)
+-  openaiClient.completion.mockRejectedValue(new Error('UPSTREAM_ERROR'));
++  openaiClient.completion.mockRejectedValueOnce(new Error('UPSTREAM_ERROR'));
+@@ (default‑mode test)
+-  openaiClient.completion.mockResolvedValue({
++  openaiClient.completion.mockResolvedValueOnce({
+      role:'assistant',
+      content: mockMealPlan,
+   });

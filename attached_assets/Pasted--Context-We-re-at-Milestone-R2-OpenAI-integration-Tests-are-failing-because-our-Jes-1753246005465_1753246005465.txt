@@ -1,0 +1,43 @@
+✂️
+🔹 Context
+• We’re at Milestone R2 (OpenAI integration).  
+• Tests are failing because our Jest mock returns `{}` instead of an object that has `choices`, causing a runtime error in `openaiClient.js`.  
+• In production we also need to guard against malformed or empty OpenAI responses.
+
+🔹 What we’re trying to do & why
+1. Make the **production code** resilient (null‑checks + clear error logging).
+2. Make the **test mocks** realistic so Jest reflects actual OpenAI payload shape.
+3. Log the incident for future reference.
+This hybrid fix protects us both in tests **and** in real OpenAI calls.
+
+🔹 Please propose a plan first
+Before you implement, reply with:
+• A short confirmation that the tasks below won’t conflict with the existing folder layout, autoscale deployment, or future milestones.  
+• Anything you think we missed or a better alternative.
+
+🔹 Tasks to implement (after I approve your plan)
+1. **openaiClient.js**  
+   • Add defensive checks: if `!res || !res.choices || !Array.isArray(res.choices)`  
+     – log `console.error('OpenAI malformed response', res)`  
+     – `throw new Error('UPSTREAM_ERROR')` (so route handler can map to 500).  
+   • Keep existing successful‑path logic unchanged.
+
+2. **tests/chat.test.js**  
+   • Update mock so `completion()` resolves to  
+     ```js
+     { choices: [ { message: { role: 'assistant', content: 'mocked' } } ] }
+     ```  
+   • Ensure both modes (`meal_plan_strict`, `goal_motivation`) still pass.
+
+3. **docs/errors-log/openai_mock_choices_missing.md** (new file)  
+   • Brief summary of the issue, screenshot link if **needed** (only one),  
+   • Root cause, fix applied, date.
+
+4. **.gitkeep / .replit / run config** – **no change** unless strictly required.
+
+🔹 Workflow constraints
+• **Do not stage or commit**; leave changes unstaged for my manual review.  
+• Keep any new screenshots to a single, cropped image if absolutely necessary.  
+• After implementing, run `npm test` and paste the summary in chat.
+
+Awaiting your proposed plan first. Thanks!

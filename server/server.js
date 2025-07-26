@@ -1,4 +1,3 @@
-
 const express = require('express');
 const chatRoutes = require('./routes/chat');
 
@@ -7,6 +6,9 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+
+// Root route for Preview tab
+app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 
 // Routes
 app.use('/api', chatRoutes);

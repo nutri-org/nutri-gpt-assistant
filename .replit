@@ -1,4 +1,5 @@
-entrypoint = "index.js"
+
+entrypoint = "server/server.js"
 modules = ["nodejs-22"]
 hidden = [".config", "package-lock.json"]
 
