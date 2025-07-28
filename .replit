@@ -29,3 +29,23 @@ args = "npm start"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 33231
+externalPort = 3000
+
+[[ports]]
+localPort = 36339
+externalPort = 3002
+
+[[ports]]
+localPort = 36911
+externalPort = 3001
+
+[[ports]]
+localPort = 37833
+externalPort = 3003
+
+[[ports]]
+localPort = 40953
+externalPort = 4200
