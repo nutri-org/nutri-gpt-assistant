@@ -1,3 +1,5 @@
+process.env.AUTH_TOKEN = 'test-secret-token';
+
 // ────────────────────────────────────────────────────────────────
 //  Jest mocks – **HOISTED** ► these three blocks *must* stay first
 // ────────────────────────────────────────────────────────────────
