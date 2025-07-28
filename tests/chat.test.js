@@ -45,6 +45,7 @@ describe('POST /api/chat', () => {
 
     const res = await request(app)
       .post('/api/chat')
+      .set('Authorization', 'Bearer test-secret-token')
       .send({
         mode:       'meal_plan_strict',
         userId:     'test-user',
@@ -67,6 +68,7 @@ describe('POST /api/chat', () => {
 
     const res = await request(app)
       .post('/api/chat')
+      .set('Authorization', 'Bearer test-secret-token')
       .send({
         mode:     'goal_motivation',
         userId:   'test-user',
@@ -98,6 +100,7 @@ describe('POST /api/chat', () => {
 
     const res = await request(app)
       .post('/api/chat')
+      .set('Authorization', 'Bearer test-secret-token')
       .send({
         mode:       'meal_plan_strict',
         userId:     'test-user',
@@ -115,6 +118,7 @@ describe('POST /api/chat', () => {
 
     const res = await request(app)
       .post('/api/chat')
+      .set('Authorization', 'Bearer test-secret-token')
       .send({
         mode:       'meal_plan_strict',
         userId:     'test-user',
@@ -139,6 +143,7 @@ describe('POST /api/chat', () => {
 
     const res = await request(app)
       .post('/api/chat')
+      .set('Authorization', 'Bearer test-secret-token')
       .send({
         userId:   'test-user',
         messages: [{ role: 'user', content: 'Help me' }]
