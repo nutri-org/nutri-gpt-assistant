@@ -1,5 +1,6 @@
 const express = require('express');
 const chatRoutes = require('./routes/chat');
+const healthRoutes = require('./routes/health');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,6 +13,7 @@ app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 
 // Routes
 app.use('/api', chatRoutes);
+app.use('/api', healthRoutes);
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
