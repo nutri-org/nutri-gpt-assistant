@@ -2,8 +2,11 @@ const express = require('express');
 const openaiClient = require('../lib/openaiClient');
 const { buildPrompt } = require('../lib/buildPrompt');
 const { checkAllergenConflicts } = require('../lib/guardRails');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
+
+router.use(auth);
 
 router.post('/chat', async (req, res) => {
   try {
