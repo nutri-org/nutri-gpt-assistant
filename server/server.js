@@ -12,7 +12,7 @@ app.use(express.json());
 app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 
 // Routes
-app.use('/api/healthz', healthRoutes);
+app.use('/api', healthRoutes);
 app.use('/api', chatRoutes);
 
 // Start server
