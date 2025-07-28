@@ -152,6 +152,17 @@ describe('POST /api/chat', () => {
     expect(res.status).toBe(200);
     expect(res.body.content).toHaveProperty('breakfast');
   });
+
+  // ---- bad‐request validation (400) ---------------------------------
+  test('should return 400 when messages array is missing', async () => {
+    const res = await request(app)
+      .post('/api/chat')
+      .set('Authorization', 'Bearer test-secret-token')
+      .send({ userId: 'test-user' }); // no messages
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('BAD_REQUEST');
+  });
 });
 afterAll(() => {
   // Let Jest exit cleanly even if server stays open
