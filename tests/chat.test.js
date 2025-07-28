@@ -146,3 +146,7 @@ describe('POST /api/chat', () => {
     expect(res.body.content).toHaveProperty('breakfast');
   });
 });
+afterAll(() => {
+  // Let Jest exit cleanly even if server stays open
+  setTimeout(() => process.exit(0), 500);
+});
