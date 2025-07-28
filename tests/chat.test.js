@@ -1,20 +1,19 @@
 
+// --- jest mocks (hoisted) ---------------------------------
+jest.mock('../server/lib/openaiClient', () => ({
+  // the route expects { role, content } already unwrapped
+  completion: jest.fn().mockResolvedValue({ role: 'assistant', content: { dummy: true } })
+}));
+
+jest.mock('../server/lib/guardRails', () => ({
+  checkAllergenConflicts: jest.fn().mockReturnValue({ safe: true })
+}));
+// -----------------------------------------------------------
+
 const request = require('supertest');
 const app = require('../server/server');
-
-// Mock OpenAI client
-jest.mock('openai', () => {
-  return jest.fn().mockImplementation(() => ({
-    chat: {
-      completions: {
-        create: jest.fn()
-      }
-    }
-  }));
-});
-
-const OpenAI = require('openai');
-const mockOpenAI = new OpenAI();
+const openaiClient = require('../server/lib/openaiClient');
+const { checkAllergenConflicts } = require('../server/lib/guardRails');
 
 describe('POST /api/chat', () => {
   beforeEach(() => {
@@ -29,13 +28,9 @@ describe('POST /api/chat', () => {
       snacks: []
     };
 
-    mockOpenAI.chat.completions.create.mockResolvedValue({
-      choices: [{
-        message: {
-          role: 'assistant',
-          content: JSON.stringify(mockMealPlan)
-        }
-      }]
+    openaiClient.completion.mockResolvedValue({
+      role: 'assistant',
+      content: mockMealPlan
     });
 
     const response = await request(app)
@@ -60,13 +55,9 @@ describe('POST /api/chat', () => {
   });
 
   test('should return 200 for goal_motivation mode with text response', async () => {
-    mockOpenAI.chat.completions.create.mockResolvedValue({
-      choices: [{
-        message: {
-          role: 'assistant',
-          content: 'Stay strong and keep going!'
-        }
-      }]
+    openaiClient.completion.mockResolvedValue({
+      role: 'assistant',
+      content: 'Stay strong and keep going!'
     });
 
     const response = await request(app)
@@ -94,13 +85,15 @@ describe('POST /api/chat', () => {
       snacks: []
     };
 
-    mockOpenAI.chat.completions.create.mockResolvedValue({
-      choices: [{
-        message: {
-          role: 'assistant',
-          content: JSON.stringify(mockMealPlan)
-        }
-      }]
+    openaiClient.completion.mockResolvedValue({
+      role: 'assistant',
+      content: mockMealPlan
+    });
+
+    checkAllergenConflicts.mockReturnValue({
+      safe: false,
+      violation: 'ALLERGEN_CONFLICT',
+      details: 'Contains peanuts'
     });
 
     const response = await request(app)
@@ -121,7 +114,7 @@ describe('POST /api/chat', () => {
   });
 
   test('should return 500 for OpenAI API failure', async () => {
-    mockOpenAI.chat.completions.create.mockRejectedValue(new Error('UPSTREAM_ERROR'));
+    openaiClient.completion.mockRejectedValue(new Error('UPSTREAM_ERROR'));
 
     const response = await request(app)
       .post('/api/chat')
@@ -148,13 +141,9 @@ describe('POST /api/chat', () => {
       snacks: []
     };
 
-    mockOpenAI.chat.completions.create.mockResolvedValue({
-      choices: [{
-        message: {
-          role: 'assistant',
-          content: JSON.stringify(mockMealPlan)
-        }
-      }]
+    openaiClient.completion.mockResolvedValue({
+      role: 'assistant',
+      content: mockMealPlan
     });
 
     const response = await request(app)
