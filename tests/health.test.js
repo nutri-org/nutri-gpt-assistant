@@ -1,6 +1,6 @@
 
 const request = require('supertest');
-const app = require('../server/server');
+const { app, server } = require('../server/server');
 
 describe('GET /api/healthz', () => {
   test('should return 200 and JSON with status, version, uptime keys', async () => {
@@ -16,7 +16,6 @@ describe('GET /api/healthz', () => {
   });
 });
 
-afterAll(() => {
-  // Let Jest exit cleanly even if server stays open
-  setTimeout(() => process.exit(0), 500);
+afterAll((done) => {
+  server.close(done);
 });

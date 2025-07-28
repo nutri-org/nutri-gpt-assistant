@@ -18,7 +18,7 @@ jest.mock('../server/lib/guardRails', () => ({
 // ────────────────────────────────────────────────────────────────
 
 const request                 = require('supertest');
-const app                     = require('../server/server');
+const { app, server }         = require('../server/server');
 const openaiClient            = require('../server/lib/openaiClient');
 const { checkAllergenConflicts } = require('../server/lib/guardRails');
 
@@ -164,7 +164,6 @@ describe('POST /api/chat', () => {
     expect(res.body.error).toBe('BAD_REQUEST');
   });
 });
-afterAll(() => {
-  // Let Jest exit cleanly even if server stays open
-  setTimeout(() => process.exit(0), 500);
+afterAll((done) => {
+  server.close(done);
 });
