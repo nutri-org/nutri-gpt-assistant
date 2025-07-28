@@ -12,8 +12,8 @@ app.use(express.json());
 app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 
 // Routes
+app.use('/api/healthz', healthRoutes);
 app.use('/api', chatRoutes);
-app.use('/api', healthRoutes);
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
