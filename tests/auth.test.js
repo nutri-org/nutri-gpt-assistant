@@ -1,7 +1,7 @@
 const request = require('supertest');
 const jwt     = require('jsonwebtoken');
 
-const app = require('../server/server');
+const { app } = require('../server/server');
 
 const secret   = process.env.JWT_SECRET;
 const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);

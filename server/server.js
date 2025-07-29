@@ -16,7 +16,8 @@ app.use('/api', healthRoutes);
 app.use('/api', chatRoutes);
 
 // In tests we only need the app; in production we also start a listener.
+let server;
 if (require.main === module) {
-  app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+  server = app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
 }
-module.exports = app;
+module.exports = { app, server };

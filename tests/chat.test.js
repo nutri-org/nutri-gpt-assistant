@@ -20,7 +20,7 @@ jest.mock('../server/lib/guardRails', () => ({
 const request = require('supertest');
 const jwt     = require('jsonwebtoken');
 
-const app = require('../server/server');
+const { app, server } = require('../server/server');
 
 const secret    = process.env.JWT_SECRET;
 const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);
@@ -164,11 +164,15 @@ describe('POST /api/chat', () => {
   test('should return 400 when messages array is missing', async () => {
     const res = await request(app)
       .post('/api/chat')
-      .set('Authorization', 'Bearer test-secret-token')
+      .set('Authorization', `Bearer ${goodToken}`)
       .send({ userId: 'test-user' }); // no messages
 
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('BAD_REQUEST');
   });
 });
-// no afterAll needed – supertest never opened a real socket
+
+afterAll(() => {
+  server?.close();          // shut down HTTP listener
+  jest.clearAllMocks();
+});
