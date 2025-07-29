@@ -1,0 +1,70 @@
+# ======================  WORK ORDER  ======================
+You are to update the project for ESLint + Prettier support and fix the current “Missing globals” errors.
+Follow EVERY step below exactly. Do NOT add, delete, or rename any other files, and do NOT make “helpful” extra edits. If anything is unclear, STOP and ask.
+
+──────────────── 1. package.json
+• Ensure the "scripts" section reads **exactly**:
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "cross-env NODE_ENV=test jest --watchAll=false",
+    "lint": "eslint . --ext .js --max-warnings 0",
+    "lint:fix": "eslint . --ext .js --max-warnings 0 --fix"
+  }
+
+• In "devDependencies", ADD (or update to) the following exact versions  
+  (leave all other existing deps untouched):
+  "@eslint/js": "^9.32.0",
+  "cross-env": "^7.0.3",
+  "eslint": "^9.32.0",
+  "eslint-config-prettier": "^10.1.8",
+  "eslint-plugin-jest": "^29.0.1",
+  "eslint-plugin-node": "^11.1.0",
+  "eslint-plugin-prettier": "^5.5.3",
+  "globals": "^16.3.0",
+  "prettier": "^3.6.2"
+
+──────────────── 2.  .eslintrc.json  (create if not present)
+Insert **exactly** this JSON:
+
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2024": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "script"
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:node/recommended",
+    "plugin:jest/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "node/no-unsupported-features/es-syntax": "off"
+  }
+}
+
+──────────────── 3.  .prettierrc  (create if not present)
+Content:
+
+{
+  "singleQuote": true,
+  "semi": true,
+  "printWidth": 100,
+  "trailingComma": "none"
+}
+
+──────────────── 4.  tests/**\*.test.js
+Add the ESLint directive to the first line of EACH Jest test file:
+/* eslint-env jest */
+
+Example (chat.test.js & health.test.js):
+```js
+/* eslint-env jest */
+const request = require('supertest');
+...
