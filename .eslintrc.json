@@ -2,8 +2,8 @@
 {
   "root": true,
   "env": {
-    "node": true,
     "es2024": true,
+    "node": true,
     "jest": true
   },
   "parserOptions": {
