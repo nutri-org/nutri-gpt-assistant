@@ -17,8 +17,14 @@ jest.mock('../server/lib/guardRails', () => ({
 
 // ────────────────────────────────────────────────────────────────
 
-const request                 = require('supertest');
-const app                     = require('../server/server');
+const request   = require('supertest');
+const jwt       = require('jsonwebtoken');
+const { app, server } = require('../server/server.js');
+
+// ------------------------------------------------------------------ helpers
+const secret = process.env.JWT_SECRET;
+const goodToken = jwt.sign({ id: 'u_test', plan: 'free' }, secret);
+const authHdr   = { Authorization: `Bearer ${goodToken}` };
 const openaiClient            = require('../server/lib/openaiClient');
 const { checkAllergenConflicts } = require('../server/lib/guardRails');
 
