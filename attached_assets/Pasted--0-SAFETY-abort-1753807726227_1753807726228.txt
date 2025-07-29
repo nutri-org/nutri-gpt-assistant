@@ -1,0 +1,65 @@
+##############################################################################
+# 0.  SAFETY – abort on any error
+set -e
+
+##############################################################################
+# 1.  Fix package/lock desync
+# ────────────────────────────────────────────────────────────────────────────
+# • We previously pinned eslint‑plugin‑n to ^16.6.1, but the lock already has 17.x
+# • Easiest: match the lock OR start fresh.  We’ll start fresh so versions are
+#   current and in sync.
+
+# 1‑a  Remove both the lockfile and node_modules (clean slate)
+rm -rf node_modules package-lock.json
+
+# 1‑b  Install the exact set of dev‑deps we need (latest versions)
+npm install --save-dev \
+  eslint@^9 \
+  @eslint/js \
+  eslint-plugin-n@latest \
+  eslint-plugin-jest@latest \
+  eslint-config-prettier@latest \
+  @eslint/eslintrc@latest \
+  cross-env@latest
+
+# 1‑c  Install runtime deps (none changed, but this re‑creates package-lock.json)
+npm install
+
+##############################################################################
+# 2.  Sanity checks
+# ────────────────────────────────────────────────────────────────────────────
+npm run lint    # expect: 0 problems
+npm test        # expect: 2 suites, 7 tests PASS
+
+##############################################################################
+# 3.  Remove obsolete files (already deleted earlier but do it idempotently)
+rm -f .eslintignore eslintrc.* eslint.config.mjs.bak eslintrc.legacy.bak || true
+
+##############################################################################
+# 4.  Write migration log
+# ────────────────────────────────────────────────────────────────────────────
+mkdir -p docs
+cat > docs/lint_migration_log.md <<'EOF'
+# ESLint v9 Migration – Complete Log
+
+**Date:** $(date -u +"%Y‑%m‑%d %H:%M UTC")  
+**Environment:** Replit + GitHub Actions
+
+## Goal
+Move to ESLint v9 flat‑config **without losing** Node, Jest or Prettier rules and
+restore a clean `npm run lint` / `npm test` locally **and** in CI.
+
+## Key Decisions
+| Decision | Reason |
+|----------|--------|
+| Replaced `eslint-plugin-node` (v8‑only) with `eslint-plugin-n` | v9‑ready fork with same rules |
+| Used `FlatCompat` to convert legacy Jest preset | Keeps full rule‑set without manual copying |
+| Added `{ ignores: ["eslint.config.mjs"] }` | ESLint no longer lints its own config file |
+| Added `nPlugin.configs["flat/recommended"]` | Restores Node env + best‑practice rules |
+| Prettier placed **last** in config | Prevents rule conflicts |
+| `.eslintignore` deleted | Superseded by `ignores` in flat config |
+
+## Final Verification
+```bash
+npm run lint   # 0 problems
+npm test       # 2 suites, 7 tests ✔
