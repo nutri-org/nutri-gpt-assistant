@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server/server.js",
     "test":  "cross-env NODE_ENV=test jest --watchAll=false",
-    "lint":       "eslint . --ext .js",
-    "lint:fix":   "eslint . --ext .js --fix"
+    "lint":       "eslint .",
+    "lint:fix":   "eslint . --fix"
   },
   "keywords": [],
   "author": "",
