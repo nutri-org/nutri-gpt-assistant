@@ -1,4 +1,3 @@
-
 const express = require('express');
 const chatRoutes = require('./routes/chat');
 const healthRoutes = require('./routes/health');
@@ -16,12 +15,12 @@ app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 app.use('/api', healthRoutes);
 app.use('/api', chatRoutes);
 
-// Export the app for tests; start the listener only
-// when this file is executed directly from `node`.
-module.exports = app;
-
+// In tests we only import `app`.  In production we also start the listener.
+let server;
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  server = app.listen(PORT, () => {
+    console.log(`Server listening on ${PORT}`);
   });
 }
+
+module.exports = { app, server };
