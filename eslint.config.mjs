@@ -1,44 +1,40 @@
-
 import js from "@eslint/js";
+import prettier from "eslint-config-prettier";
+import jestPlugin from "eslint-plugin-jest";
+import nodePlugin from "eslint-plugin-node";
 import { FlatCompat } from "@eslint/eslintrc";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
-const compat     = new FlatCompat({ baseDirectory: __dirname });
+const compat = new FlatCompat();
 
 export default [
   js.configs.recommended,
 
-  // Use compat for ALL legacy plugins to avoid "globals" key issues
-  ...compat.config({
-    extends: [
-      "plugin:node/recommended",
-      "plugin:jest/recommended",
-      "prettier"
-    ]
-  }),
+  // ✅ Convert each legacy object, no “globals” left behind
+  ...compat.config(jestPlugin.configs.recommended),
+  ...compat.config(nodePlugin.configs.recommended),
 
-  // Jest globals only for test files
+  prettier,                       // always last
+
+  // Jest globals only in test files
   {
     files: ["**/*.test.js", "**/__tests__/**/*.js"],
     languageOptions: {
       globals: {
-        jest:       "readonly",
-        describe:   "readonly",
-        test:       "readonly",
+        jest: "readonly",
+        describe: "readonly",
+        test: "readonly",
         beforeEach: "readonly",
-        expect:     "readonly"
+        expect: "readonly"
       }
     }
   },
 
-  // Custom project rules
+  // Project‑specific tweaks
   {
     rules: {
       "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-      "node/no-unsupported-features/es-syntax": "off"
+      "node/no-unsupported-features/es-syntax": "off",
+      "node/no-deprecated-api": "off"   // temporary v9 workaround
     }
   }
 ];
