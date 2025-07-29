@@ -1,19 +1,19 @@
 
-/**
- * Simple Bearer‑token auth middleware.
- * Exposes req.user = { id: 'demo' } if the token matches process.env.AUTH_TOKEN.
- * Otherwise responds 401 JSON { error: 'UNAUTHENTICATED' }.
- */
-module.exports = function auth (req, res, next) {
-  try {
-    const hdr = req.headers.authorization || '';
-    const [, token] = hdr.split(' ');
-    if (token && token === process.env.AUTH_TOKEN) {
-      req.user = { id: 'demo' };
+import jwt from 'jsonwebtoken';
+
+export default function auth(required = true) {
+  return (req, res, next) => {
+    const header = req.headers.authorization || '';
+    const token  = header.replace(/^Bearer\s+/i, '');
+    if (!token) {
+      if (required) return res.status(401).json({ error: 'UNAUTHENTICATED' });
       return next();
     }
-    return res.status(401).json({ error: 'UNAUTHENTICATED' });
-  } catch {
-    return res.status(401).json({ error: 'UNAUTHENTICATED' });
-  }
-};
+    try {
+      req.user = jwt.verify(token, process.env.JWT_SECRET);
+      return next();
+    } catch {
+      return res.status(401).json({ error: 'UNAUTHENTICATED' });
+    }
+  };
+}
