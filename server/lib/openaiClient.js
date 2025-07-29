@@ -3,9 +3,16 @@ const OpenAI = require('openai');
 
 class OpenAIClient {
   constructor() {
-    this.client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    const apiKey =
+      process.env.OPENAI_API_KEY ||
+      (process.env.NODE_ENV === 'test' ? 'test-key' : undefined);
+
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY is missing');
+    }
+
+    this.client = new OpenAI({ apiKey });
+
   }
 
   async completion(messages, temperature = 0.1, functions = null) {
