@@ -26,7 +26,6 @@ const secret    = process.env.JWT_SECRET;
 const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);
 
 // ------------------------------------------------------------------ helpers
-const authHdr   = { Authorization: `Bearer ${goodToken}` };
 const openaiClient            = require('../server/lib/openaiClient');
 const { checkAllergenConflicts } = require('../server/lib/guardRails');
 

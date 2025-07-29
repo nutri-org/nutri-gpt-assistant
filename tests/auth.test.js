@@ -7,17 +7,22 @@ const secret   = process.env.JWT_SECRET;
 const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);
 
 describe('auth middleware', () => {
-  const good = jwt.sign({ id: 'u1', plan: 'free' }, process.env.JWT_SECRET);
-
-  it('401 when missing token', async () => {
-    const res = await request(app).post('/api/chat');
+  test('should reject no-token request', async () => {
+    const res = await request(app).get('/api/healthz');
     expect(res.status).toBe(401);
   });
 
-  it('200 when token valid', async () => {
+  test('should reject bad token', async () => {
     const res = await request(app)
       .get('/api/healthz')
-      .set('Authorization', `Bearer ${good}`);
+      .set('Authorization', 'Bearer invalid-token');
+    expect(res.status).toBe(401);
+  });
+
+  test('should accept valid token', async () => {
+    const res = await request(app)
+      .get('/api/healthz')
+      .set('Authorization', `Bearer ${goodToken}`);
     expect(res.status).toBe(200);
   });
 });
