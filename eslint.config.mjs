@@ -7,6 +7,8 @@ import { FlatCompat } from "@eslint/eslintrc";
 const compat = new FlatCompat();
 
 export default [
+
+  { ignores: ["eslint.config.mjs"] },
   // Base JS rules
   js.configs.recommended,
 
