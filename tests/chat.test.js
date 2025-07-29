@@ -1,3 +1,4 @@
+/* eslint-env jest */
 process.env.AUTH_TOKEN = 'test-secret-token';
 
 // ────────────────────────────────────────────────────────────────

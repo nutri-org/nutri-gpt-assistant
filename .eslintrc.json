@@ -1,0 +1,23 @@
+
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2024": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "script"
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:node/recommended",
+    "plugin:jest/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "node/no-unsupported-features/es-syntax": "off"
+  }
+}
