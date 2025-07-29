@@ -13,7 +13,7 @@ module.exports = function auth (req, res, next) {
       return next();
     }
     return res.status(401).json({ error: 'UNAUTHENTICATED' });
-  } catch (err) {
+  } catch {
     return res.status(401).json({ error: 'UNAUTHENTICATED' });
   }
 };

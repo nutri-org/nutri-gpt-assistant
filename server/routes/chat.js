@@ -12,7 +12,7 @@ router.use(validate);
 
 router.post('/chat', async (req, res) => {
   try {
-    const { mode, userId, messages, context } = req.body;
+    const { mode, messages, context } = req.body;
 
     // Default to meal_plan_strict if mode not provided
     const chatMode = mode || 'meal_plan_strict';
