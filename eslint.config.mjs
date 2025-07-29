@@ -33,6 +33,12 @@ export default [
     }
   },
 
+  // Treat all .mjs files as ES modules so ESLint can parse this config itself
+  {
+    files: ["**/*.mjs"],
+    languageOptions: { sourceType: "module" }
+  },
+
   // Project‑specific tweaks
   {
     rules: {
