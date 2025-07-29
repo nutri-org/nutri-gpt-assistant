@@ -15,4 +15,4 @@ describe('GET /api/healthz', () => {
   });
 });
 
-// no afterAll needed
+afterAll(() => jest.clearAllMocks());
