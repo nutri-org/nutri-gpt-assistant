@@ -1,0 +1,80 @@
+You MUST follow these steps **in order**, touching only the files mentioned.
+
+1. ---------------------------------
+   Add dev‑dependencies
+   ---------------------------------
+   In package.json ➜ "devDependencies", add (or update to the exact versions):
+
+     "eslint": "^9.32.0",
+     "eslint-plugin-jest": "^29.0.1",
+     "eslint-plugin-node": "^11.1.0",
+     "eslint-config-prettier": "^10.1.8",
+     "eslint-plugin-prettier": "^5.5.3",
+     "globals": "^16.3.0"
+
+   ⚠️  Do NOT remove anything that is already there.
+
+   Run:
+     npm install
+
+2. ---------------------------------
+   Replace the entire contents of .eslintrc.json
+   ---------------------------------
+   with:
+
+   {
+     "root": true,
+     "env": {
+       "es2024": true,
+       "node": true
+     },
+     "parserOptions": {
+       "ecmaVersion": "latest",
+       "sourceType": "script"
+     },
+     "extends": [
+       "eslint:recommended",
+       "plugin:node/recommended",
+       "plugin:jest/recommended",
+       "plugin:prettier/recommended"
+     ],
+     "overrides": [
+       {
+         "files": ["tests/**/*.js", "**/*.test.js"],
+         "env": { "jest": true }
+       }
+     ],
+     "rules": {
+       "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+       "node/no-unsupported-features/es-syntax": "off"
+     }
+   }
+
+3. ---------------------------------
+   Top‑of‑file comments
+   ---------------------------------
+   • Remove the temporary `/* eslint-env jest */` comments you added at the top of
+     tests/chat.test.js and tests/health.test.js (they’re now redundant).
+
+4. ---------------------------------
+   Update npm scripts
+   ---------------------------------
+   In package.json ➜ "scripts", ensure you have **exactly**:
+
+     "lint":       "eslint . --ext .js",
+     "lint:fix":   "eslint . --ext .js --fix"
+
+   (leave your existing "start" and "test" scripts unchanged)
+
+5. ---------------------------------
+   Verify
+   ---------------------------------
+   Run:
+     npm run lint
+   It must report **0 errors**.
+
+6. ---------------------------------
+   Commit
+   ---------------------------------
+   Commit all modified files with message:
+     chore(lint): add eslint-plugin‑jest & clean test‑file errors
