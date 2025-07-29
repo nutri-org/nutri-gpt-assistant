@@ -3,6 +3,7 @@ const chatRoutes = require('./routes/chat');
 const healthRoutes = require('./routes/health');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -15,12 +16,8 @@ app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 app.use('/api', healthRoutes);
 app.use('/api', chatRoutes);
 
-// In tests we only import `app`.  In production we also start the listener.
-let server;
+// In tests we only need the app; in production we also start a listener.
 if (require.main === module) {
-  server = app.listen(PORT, () => {
-    console.log(`Server listening on ${PORT}`);
-  });
+  app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
 }
-
-module.exports = { app, server };
+module.exports = app;

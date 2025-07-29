@@ -1,7 +1,10 @@
-/* eslint-env jest */
 const request = require('supertest');
 const jwt     = require('jsonwebtoken');
-const { app } = require('../server/server');
+
+const app = require('../server/server');
+
+const secret   = process.env.JWT_SECRET;
+const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);
 
 describe('auth middleware', () => {
   const good = jwt.sign({ id: 'u1', plan: 'free' }, process.env.JWT_SECRET);
@@ -18,3 +21,5 @@ describe('auth middleware', () => {
     expect(res.status).toBe(200);
   });
 });
+
+afterAll(() => jest.clearAllMocks());
