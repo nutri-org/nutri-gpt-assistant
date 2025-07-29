@@ -1,21 +1,26 @@
-import js from "@eslint/js";
-import prettier from "eslint-config-prettier";
-import jestPlugin from "eslint-plugin-jest";
-import nodePlugin from "eslint-plugin-node";
-import { FlatCompat } from "@eslint/eslintrc";
 
-const compat = new FlatCompat();
+import js from "@eslint/js";
+import { FlatCompat } from "@eslint/eslintrc";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const compat = new FlatCompat({ baseDirectory: __dirname });
 
 export default [
   js.configs.recommended,
 
-  // ✅ Convert each legacy object, no “globals” left behind
-  ...compat.config(jestPlugin.configs.recommended),
-  ...compat.config(nodePlugin.configs.recommended),
+  // Use compat for ALL legacy plugins to avoid "globals" key issues
+  ...compat.config({
+    extends: [
+      "plugin:node/recommended",
+      "plugin:jest/recommended",
+      "prettier"
+    ]
+  }),
 
-  prettier,                       // always last
-
-  // Jest globals only in test files
+  // Jest globals only for test files
   {
     files: ["**/*.test.js", "**/__tests__/**/*.js"],
     languageOptions: {
@@ -29,7 +34,7 @@ export default [
     }
   },
 
-  // Project‑specific tweaks
+  // Project-specific tweaks
   {
     rules: {
       "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
