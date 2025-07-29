@@ -1,0 +1,82 @@
+###############################################
+#  R1 · AUTH & DB SCHEMA
+###############################################
+
+# 1. Supabase SQL migration
+cat > db/migrations/20250729_auth_quota.sql <<'SQL'
+alter table users
+  add column plan text default 'free',
+  add column remaining_credits int default 30;
+
+create table assistant_settings (
+  owner uuid primary key references users(id) on delete cascade,
+  strict_prompt text,
+  creative_prompt text,
+  strict_tasks text[],
+  creative_tasks text[],
+  strict_temp numeric default 0.1,
+  creative_temp numeric default 0.7
+);
+
+create table datasets (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid references users(id) on delete cascade,
+  filename text,
+  url text,
+  created_at timestamptz default now()
+);
+SQL
+
+# 2. server/middleware/auth.js
+mkdir -p server/middleware
+cat > server/middleware/auth.js <<'JS'
+import jwt from 'jsonwebtoken';
+export default function auth(required = true) {
+  return (req, res, next) => {
+    const header = req.headers.authorization || '';
+    const token  = header.replace(/^Bearer\s+/i, '');
+    if (!token) {
+      if (required) return res.status(401).json({ error: 'UNAUTHENTICATED' });
+      return next();
+    }
+    try {
+      req.user = jwt.verify(token, process.env.JWT_SECRET);
+      return next();
+    } catch {
+      return res.status(401).json({ error: 'UNAUTHENTICATED' });
+    }
+  };
+}
+JS
+
+# 3. Jest test
+mkdir -p tests
+cat > tests/auth.test.js <<'JS'
+/* eslint-env jest */
+import request from 'supertest';
+import { app } from '../server/server.js';
+import jwt from 'jsonwebtoken';
+
+describe('auth middleware', () => {
+  const good = jwt.sign({ id: 'u1', plan: 'free' }, process.env.JWT_SECRET);
+  it('401 when missing token', () =>
+    request(app).post('/api/chat').expect(401));
+  it('200 when token valid', () =>
+    request(app)
+      .post('/api/healthz')
+      .set('Authorization', `Bearer ${good}`)
+      .expect(200));
+});
+JS
+
+# 4. npm script update
+npm pkg set scripts.migrate="psql \"$SUPABASE_URL\" < db/migrations/*.sql"
+
+# 5. Run linter & tests
+npm run lint
+npm test
+
+# 6. Commit & push
+git add server/middleware/auth.js db/migrations tests/auth.test.js package.json
+git commit -m "feat: auth middleware + DB schema migration (R1)"
+git push
