@@ -1,7 +1,11 @@
 
-import jwt from 'jsonwebtoken';
+/**
+ * Bearer‑token JWT auth middleware (CommonJS).
+ * Exposes req.user if token is valid, else 401.
+ */
+const jwt = require('jsonwebtoken');
 
-export default function auth(required = true) {
+module.exports = function auth(required = true) {
   return (req, res, next) => {
     const header = req.headers.authorization || '';
     const token  = header.replace(/^Bearer\s+/i, '');
@@ -16,4 +20,4 @@ export default function auth(required = true) {
       return res.status(401).json({ error: 'UNAUTHENTICATED' });
     }
   };
-}
+};
