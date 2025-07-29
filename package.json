@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node server/server.js",
-    "test": "cross-env NODE_ENV=test jest --watchAll=false",
-    "lint": "eslint . --ext .js",
-    "lint:fix": "eslint . --ext .js --fix"
+    "test":  "cross-env NODE_ENV=test jest --watchAll=false",
+    "lint":       "eslint . --ext .js",
+    "lint:fix":   "eslint . --ext .js --fix"
   },
   "keywords": [],
   "author": "",
