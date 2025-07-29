@@ -10,10 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env: # ✅ Add environment variables for the job
+    # Environment variables visible to *all* steps in this job
+    env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       NODE_ENV: test
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -26,4 +27,4 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test -- --watchAll=false
+        run: npm test
