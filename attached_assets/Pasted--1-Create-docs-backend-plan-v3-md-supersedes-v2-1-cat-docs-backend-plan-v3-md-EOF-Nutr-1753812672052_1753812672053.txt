@@ -1,0 +1,54 @@
+# 1. Create docs/backend_plan_v3.md (supersedes v2.1)
+cat > docs/backend_plan_v3.md <<'EOF'
+# Nutri GPT Assistant · Replit Back‑end Plan v3
+
+— adds **subscription tiers, quota, dataset upload, assistant settings**  
+— builds on v2.1 spec:contentReference[oaicite:2]{index=2}
+
+## 0 · Mission
+Same dual‑mode chat proxy (`meal_plan_strict`, `goal_motivation`) **plus**:
+* Subscription control: `free`, `limited`, `unlimited`.
+* Per‑user credit quota + Stripe checkout/webhook.
+* Admin‑upload of reference datasets (USDA, nutrition facts).
+* Runtime‑editable strict / creative instruction boxes & temp sliders.
+
+## 1 · Tech Additions
+| Concern | Decision |
+|---------|----------|
+| Billing | Stripe Checkout + `stripe.webhooks` |
+| Quota   | Supabase `remaining_credits` INT column |
+| Dataset storage | Supabase Storage bucket `datasets/` |
+| Settings storage | Supabase table `assistant_settings` |
+| Auth    | Existing bearer JWT → adds `plan` & `remaining_credits` claims |
+
+## 2 · New Endpoints
+| Verb | Path | Auth | Purpose |
+|------|------|------|---------|
+| GET  | /api/healthz | none | uptime |
+| POST | /api/chat | bearer | **uses 1 credit** (unless plan=unlimited) |
+| POST | /api/datasets/upload | bearer admin | multipart file upload |
+| PUT  | /api/assistant/settings | bearer admin | update strict/creative boxes |
+| GET  | /api/assistant/settings | bearer | fetch current settings |
+| POST | /api/billing/webhook | stripe | updates plan & credits |
+
+## 3 · Milestones
+| R# | Deliverable | Gate |
+|----|-------------|------|
+| R1 | **Auth + Supabase schema migration** (`users`, `assistant_settings`, `datasets`) | jest auth.test.js green |
+| R2 | **Quota middleware** (credits decrement + 429) | chat quota test green |
+| R3 | **Stripe webhook** (plan & credit top‑up) | curl webhook test green |
+| R4 | **Dataset upload** + guard file size 10 MB | jest upload.test.js green |
+| R5 | **Assistant settings endpoints** (strict/creative boxes) | jest settings.test.js green |
+| R6 | Update README with cURL examples | manual check |
+| R7 | Autoscale deploy URL live | smoke test |
+
+## 4 · Done Criteria
+* All endpoints pass unit tests & lint.
+* CI green, p99 ≤ 3 s at 25 RPM.
+* Admin can update prompts & upload datasets without code deploy.
+EOF
+
+# 2. Commit & push
+git add docs/backend_plan_v3.md
+git commit -m "docs: backend plan v3 (subscription, quota, dataset upload, assistant settings)"
+git push
