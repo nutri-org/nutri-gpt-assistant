@@ -1,6 +1,6 @@
 
 const request = require('supertest');
-const { app, server } = require('../server/server');
+const app = require('../server/server');
 
 describe('GET /api/healthz', () => {
   test('should return 200 and JSON with status, version, uptime keys', async () => {
@@ -16,6 +16,4 @@ describe('GET /api/healthz', () => {
   });
 });
 
-afterAll((done) => {
-  server.close(done);
-});
+// no afterAll needed

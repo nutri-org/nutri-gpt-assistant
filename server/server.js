@@ -16,9 +16,12 @@ app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 app.use('/api', healthRoutes);
 app.use('/api', chatRoutes);
 
-// Start server
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Export the app for tests; start the listener only
+// when this file is executed directly from `node`.
+module.exports = app;
 
-module.exports = { app, server };
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}

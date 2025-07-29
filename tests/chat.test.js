@@ -18,7 +18,7 @@ jest.mock('../server/lib/guardRails', () => ({
 // ────────────────────────────────────────────────────────────────
 
 const request                 = require('supertest');
-const { app, server }         = require('../server/server');
+const app                     = require('../server/server');
 const openaiClient            = require('../server/lib/openaiClient');
 const { checkAllergenConflicts } = require('../server/lib/guardRails');
 
@@ -164,6 +164,4 @@ describe('POST /api/chat', () => {
     expect(res.body.error).toBe('BAD_REQUEST');
   });
 });
-afterAll((done) => {
-  server.close(done);
-});
+// no afterAll needed – supertest never opened a real socket
