@@ -26,4 +26,10 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/datasets', auth(), datasetsRoutes);
 app.use('/api/assistant/settings', auth(), settingsRoutes);
 
+// Central error middleware (must be last)
+app.use((err, req, res, _next) => {
+  console.error(err);
+  res.status(500).json({ error: 'INTERNAL_SERVER_ERROR' });
+});
+
 module.exports = { app };
