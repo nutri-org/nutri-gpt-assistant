@@ -35,6 +35,6 @@
     "jest": "^30.0.5",
     "jsonwebtoken": "^9.0.2",
     "prettier": "^3.6.2",
-    "stripe": "^18.3.0"
+    "stripe": "^18.4.0"
   }
 }
