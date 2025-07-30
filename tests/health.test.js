@@ -15,4 +15,10 @@ describe('GET /api/healthz', () => {
   });
 });
 
-afterAll(() => jest.clearAllMocks());
+afterAll(async () => {
+  // Close any open handles from the imported app
+  if (app && app.close) {
+    await new Promise(resolve => app.close(resolve));
+  }
+  jest.clearAllMocks();
+});
