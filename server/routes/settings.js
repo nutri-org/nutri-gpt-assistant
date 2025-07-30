@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../lib/supabase');
+const supabase = require('../server/lib/supabase');
 const auth = require('../../middleware/auth');
 
 // GET /api/settings - retrieve user's assistant settings

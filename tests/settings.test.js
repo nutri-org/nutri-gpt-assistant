@@ -112,7 +112,8 @@ describe('Settings Routes', () => {
 
     const response = await request(app)
       .patch('/api/settings')
-      .send(updateData);
+      .send(updateData)
+      .set('Authorization', 'Bearer test-secret-token');
 
     expect(response.status).toBe(200);
     expect(response.body.strict_temp).toBe(0.1);
@@ -123,7 +124,9 @@ describe('Settings Routes', () => {
       error: null
     });
 
-    const response = await request(app).delete('/api/settings');
+    const response = await request(app)
+      .delete('/api/settings')
+      .set('Authorization', 'Bearer test-secret-token');
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Settings reset to defaults');

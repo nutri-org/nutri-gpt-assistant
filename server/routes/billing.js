@@ -2,7 +2,7 @@
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 const express = require('express');
 const router = express.Router();
-const supabase = require('../lib/supabase');
+const supabase = require('../server/lib/supabase');
 
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.get('stripe-signature');
