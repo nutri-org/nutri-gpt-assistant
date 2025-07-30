@@ -166,6 +166,7 @@ describe('POST /api/chat', () => {
   });
 });
 
-afterAll(() => {
+afterAll(async () => {
+  if (app.close) await new Promise(res => app.close(res));
   jest.clearAllMocks();
 });

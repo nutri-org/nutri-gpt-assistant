@@ -32,6 +32,7 @@ describe('auth middleware', () => {
   });
 });
 
-afterAll(() => {
+afterAll(async () => {
+  if (app.close) await new Promise(res => app.close(res));
   jest.clearAllMocks();
 });
