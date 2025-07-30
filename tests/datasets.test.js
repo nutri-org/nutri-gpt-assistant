@@ -1,6 +1,7 @@
 
 const request = require('supertest');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 
 // Mock Supabase
 jest.mock('../server/lib/supabase', () => ({
@@ -44,10 +45,16 @@ describe('Datasets Routes', () => {
       error: null
     });
 
+    const goodToken = jwt.sign(
+      { id: 'test-user-id', plan: 'limited' },
+      process.env.JWT_SECRET
+    );
+
     const response = await request(app)
       .post('/api/datasets/upload')
       .attach('file', Buffer.from('csv,data\n1,test'), 'test.csv')
-      .field('name', 'test-dataset');
+      .field('name', 'test-dataset')
+      .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(201);
     expect(response.body.message).toBe('Dataset uploaded successfully');
@@ -59,19 +66,31 @@ describe('Datasets Routes', () => {
       error: { message: 'Storage error' }
     });
 
+    const goodToken = jwt.sign(
+      { id: 'test-user-id', plan: 'limited' },
+      process.env.JWT_SECRET
+    );
+
     const response = await request(app)
       .post('/api/datasets/upload')
       .attach('file', Buffer.from('csv,data'), 'test.csv')
-      .field('name', 'test-dataset');
+      .field('name', 'test-dataset')
+      .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(500);
     expect(response.body.error).toBe('Upload failed');
   });
 
   test('requires file attachment', async () => {
+    const goodToken = jwt.sign(
+      { id: 'test-user-id', plan: 'limited' },
+      process.env.JWT_SECRET
+    );
+
     const response = await request(app)
       .post('/api/datasets/upload')
-      .field('name', 'test-dataset');
+      .field('name', 'test-dataset')
+      .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('No file uploaded');

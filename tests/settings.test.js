@@ -1,5 +1,6 @@
 const request = require('supertest');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 
 // Mock Supabase
 jest.mock('../server/lib/supabase', () => ({
@@ -59,9 +60,14 @@ describe('Settings Routes', () => {
       error: null
     });
 
+    const goodToken = jwt.sign(
+      { id: 'test-user-id', plan: 'limited' },
+      process.env.JWT_SECRET
+    );
+
     const res = await request(app)
       .get('/api/settings')
-      .set('Authorization', 'Bearer test-secret-token');
+      .set('Authorization', `Bearer ${goodToken}`);
 
     expect(res.status).toBe(200);
     expect(res.body.strict_prompt).toBe('Test prompt');
@@ -73,9 +79,14 @@ describe('Settings Routes', () => {
       error: { code: 'PGRST116' }
     });
 
+    const goodToken = jwt.sign(
+      { id: 'test-user-id', plan: 'limited' },
+      process.env.JWT_SECRET
+    );
+
     const res = await request(app)
       .get('/api/settings')
-      .set('Authorization', 'Bearer test-secret-token');
+      .set('Authorization', `Bearer ${goodToken}`);
 
     expect(res.status).toBe(200);
     expect(res.body.strict_temp).toBe(0.2);
@@ -93,10 +104,15 @@ describe('Settings Routes', () => {
       error: null
     });
 
+    const goodToken = jwt.sign(
+      { id: 'test-user-id', plan: 'limited' },
+      process.env.JWT_SECRET
+    );
+
     const response = await request(app)
       .put('/api/settings')
       .send(newSettings)
-      .set('Authorization', 'Bearer test-secret-token');
+      .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.strict_prompt).toBe('New strict prompt');
@@ -110,10 +126,15 @@ describe('Settings Routes', () => {
       error: null
     });
 
+    const goodToken = jwt.sign(
+      { id: 'test-user-id', plan: 'limited' },
+      process.env.JWT_SECRET
+    );
+
     const response = await request(app)
       .patch('/api/settings')
       .send(updateData)
-      .set('Authorization', 'Bearer test-secret-token');
+      .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.strict_temp).toBe(0.1);
@@ -124,9 +145,14 @@ describe('Settings Routes', () => {
       error: null
     });
 
+    const goodToken = jwt.sign(
+      { id: 'test-user-id', plan: 'limited' },
+      process.env.JWT_SECRET
+    );
+
     const response = await request(app)
       .delete('/api/settings')
-      .set('Authorization', 'Bearer test-secret-token');
+      .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe('Settings reset to defaults');
