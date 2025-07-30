@@ -24,7 +24,6 @@ router.post('/upload', auth(), quota, async (req, res) => {
     const storagePath = `${userId}/${Date.now()}_${filename}`;
 
     // Upload to Supabase storage bucket 'datasets'
-    // placeholder: actual upload handled by Supabase storage client
     const { error: uploadError } = await supabase.storage
       .from('datasets')
       .upload(storagePath, Buffer.from(fileData, 'base64'), {
