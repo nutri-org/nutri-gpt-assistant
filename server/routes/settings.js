@@ -76,7 +76,7 @@ router.put('/', auth(), async (req, res) => {
 router.patch('/', auth(), async (req, res) => {
   try {
     const updateData = req.body;
-    
+
     // Remove owner field if present to prevent unauthorized changes
     delete updateData.owner;
 

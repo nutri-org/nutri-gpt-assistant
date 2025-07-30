@@ -1,4 +1,3 @@
-
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 const express = require('express');
 const router = express.Router();
