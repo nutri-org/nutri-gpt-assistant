@@ -31,10 +31,13 @@ const { checkAllergenConflicts } = require('../server/lib/guardRails');
 
 describe('POST /api/chat', () => {
 
-  /** ensure a clean slate & a default “safe” guard‑rail result */
+  /** ensure a clean slate & a default "safe" guard‑rail result */
   beforeEach(() => {
-    jest.clearAllMocks();
     checkAllergenConflicts.mockReturnValue({ safe: true });
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   // ───────────────────────── meal_plan_strict (200 / JSON)
