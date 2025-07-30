@@ -7,7 +7,7 @@ const validate = require('../middleware/validate');
 
 const router = express.Router();
 
-router.use(auth);
+router.use(auth(true));        // everything below this line is protected
 router.use(validate);
 
 router.post('/chat', async (req, res) => {
