@@ -1,4 +1,3 @@
-
 const request = require('supertest');
 const express = require('express');
 
@@ -60,10 +59,12 @@ describe('Settings Routes', () => {
       error: null
     });
 
-    const response = await request(app).get('/api/settings');
+    const res = await request(app)
+      .get('/api/settings')
+      .set('Authorization', 'Bearer test-secret-token');
 
-    expect(response.status).toBe(200);
-    expect(response.body.strict_prompt).toBe('Test prompt');
+    expect(res.status).toBe(200);
+    expect(res.body.strict_prompt).toBe('Test prompt');
   });
 
   test('returns default settings when none exist', async () => {
@@ -72,11 +73,13 @@ describe('Settings Routes', () => {
       error: { code: 'PGRST116' }
     });
 
-    const response = await request(app).get('/api/settings');
+    const res = await request(app)
+      .get('/api/settings')
+      .set('Authorization', 'Bearer test-secret-token');
 
-    expect(response.status).toBe(200);
-    expect(response.body.strict_temp).toBe(0.2);
-    expect(response.body.creative_temp).toBe(0.7);
+    expect(res.status).toBe(200);
+    expect(res.body.strict_temp).toBe(0.2);
+    expect(res.body.creative_temp).toBe(0.7);
   });
 
   test('creates new settings', async () => {
@@ -92,7 +95,8 @@ describe('Settings Routes', () => {
 
     const response = await request(app)
       .put('/api/settings')
-      .send(newSettings);
+      .send(newSettings)
+      .set('Authorization', 'Bearer test-secret-token');
 
     expect(response.status).toBe(200);
     expect(response.body.strict_prompt).toBe('New strict prompt');

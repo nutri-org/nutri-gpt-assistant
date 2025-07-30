@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const supabase = require('../lib/supabase');
@@ -9,7 +8,7 @@ const quota = require('../../middleware/quota');
 router.post('/upload', auth(), quota, async (req, res) => {
   try {
     const { filename, fileData } = req.body;
-    
+
     if (!filename || !fileData) {
       return res.status(400).json({ error: 'filename and fileData are required' });
     }
