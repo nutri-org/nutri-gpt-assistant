@@ -22,3 +22,13 @@ create table assistant_settings (
   strict_temp numeric default 0.2,
   creative_temp numeric default 0.7
 );
+
+-- function to decrement user credits
+create or replace function decrement_credit(uid uuid)
+returns void as $$
+begin
+  update users 
+  set remaining_credits = remaining_credits - 1 
+  where id = uid and remaining_credits > 0;
+end;
+$$ language plpgsql;
