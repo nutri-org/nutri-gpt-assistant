@@ -12,7 +12,7 @@ jest.mock('stripe', () => {
 });
 
 // Mock Supabase
-jest.mock('../server/lib/supabase', () => ({
+jest.mock('../lib/supabase', () => ({
   from: jest.fn(() => ({
     update: jest.fn(() => ({
       eq: jest.fn()
@@ -21,7 +21,7 @@ jest.mock('../server/lib/supabase', () => ({
 }));
 
 const stripe = require('stripe')();
-const supabase = require('../server/lib/supabase');
+const supabase = require('../lib/supabase');
 const billingRoutes = require('../server/routes/billing');
 
 const app = express();
