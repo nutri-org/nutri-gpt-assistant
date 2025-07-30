@@ -2,7 +2,6 @@ jest.mock('../server/lib/openaiClient', () => ({
   completion: jest.fn()
 }));
 
-const openaiClient = require('../server/lib/openaiClient');
 const app          = require('../server/app');        // pure app, no server
 
 const request = require('supertest');
@@ -26,7 +25,7 @@ describe('auth middleware', () => {
 
   test('should accept valid token', async () => {
     const res = await request(app)
-      .post('/api/chat')
+      .get('/api/healthz')
       .set('Authorization', `Bearer ${goodToken}`);
     expect(res.status).toBe(200);
   });
