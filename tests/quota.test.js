@@ -81,3 +81,7 @@ describe('Quota Middleware', () => {
     expect(response.body.success).toBe(true);
   });
 });
+
+afterAll(async () => {
+  await new Promise(res => setTimeout(res, 0)); // let supertest finish
+});

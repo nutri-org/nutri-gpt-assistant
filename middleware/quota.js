@@ -13,7 +13,9 @@ module.exports = function quota() {
       .single();
 
     if (error) return next(error);
-    if (data.remaining_credits < 1) return res.status(402).json({ error: 'NO_CREDITS' });
+    if (data.remaining_credits < 1) {
+      return res.status(403).json({ error: 'QUOTA_EXCEEDED' });
+    }
 
     const { error: updateErr } = await supabase.rpc('decrement_credit', { uid: req.user.id });
     return updateErr ? next(updateErr) : next();
