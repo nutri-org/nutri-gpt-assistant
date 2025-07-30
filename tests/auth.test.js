@@ -1,7 +1,12 @@
+jest.mock('../server/lib/openaiClient', () => ({
+  completion: jest.fn()
+}));
+
+const openaiClient = require('../server/lib/openaiClient');
+const app          = require('../server/app');        // pure app, no server
+
 const request = require('supertest');
 const jwt     = require('jsonwebtoken');
-
-const app = require('../server/app');
 
 const secret   = process.env.JWT_SECRET;
 const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);

@@ -1,33 +1,24 @@
-process.env.AUTH_TOKEN = 'test-secret-token';
-
-// ────────────────────────────────────────────────────────────────
-//  Jest mocks – **HOISTED** ► these three blocks *must* stay first
-// ────────────────────────────────────────────────────────────────
 jest.mock('../server/lib/openaiClient', () => ({
-  // route expects already‑unwrapped { role, content }
-  completion: jest.fn().mockResolvedValue({
-    role: 'assistant',
-    content: { dummy: true }
-  })
+  completion: jest.fn()
 }));
 
-jest.mock('../server/lib/guardRails', () => ({
-  checkAllergenConflicts: jest.fn()            // value set in tests
-}));
+const openaiClient = require('../server/lib/openaiClient');
+const app          = require('../server/app');        // pure app, no server
 
-// ────────────────────────────────────────────────────────────────
+process.env.AUTH_TOKEN = 'test-secret-token';
 
 const request = require('supertest');
 const jwt     = require('jsonwebtoken');
 
-const app = require('../server/app');
+// Mock guardRails after the main imports
+jest.mock('../server/lib/guardRails', () => ({
+  checkAllergenConflicts: jest.fn()
+}));
+
+const { checkAllergenConflicts } = require('../server/lib/guardRails');
 
 const secret    = process.env.JWT_SECRET;
 const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);
-
-// ------------------------------------------------------------------ helpers
-const openaiClient            = require('../server/lib/openaiClient');
-const { checkAllergenConflicts } = require('../server/lib/guardRails');
 
 describe('POST /api/chat', () => {
 
