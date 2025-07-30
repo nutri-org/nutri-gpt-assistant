@@ -20,7 +20,7 @@ jest.mock('../server/lib/guardRails', () => ({
 const request = require('supertest');
 const jwt     = require('jsonwebtoken');
 
-const { app, server } = require('../server/server');
+const { app } = require('../server/server');
 
 const secret    = process.env.JWT_SECRET;
 const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);
@@ -176,6 +176,5 @@ describe('POST /api/chat', () => {
 });
 
 afterAll(() => {
-  server?.close();          // shut down HTTP listener
   jest.clearAllMocks();
 });
