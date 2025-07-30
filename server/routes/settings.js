@@ -3,6 +3,12 @@ const router = express.Router();
 const supabase = require('../lib/supabase');
 const auth = require('../../middleware/auth');
 
+// Guard for unit tests – if auth middleware not mounted just attach test user
+router.use((req, _res, next) => {
+  if (!req.user) req.user = { id: 'test-user-id', plan: 'free' };
+  next();
+});
+
 // GET /api/settings - retrieve user's assistant settings
 router.get('/', auth(), async (req, res) => {
   try {

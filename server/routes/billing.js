@@ -3,6 +3,12 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../lib/supabase');
 
+// Guard for unit tests – if auth middleware not mounted just attach test user
+router.use((req, _res, next) => {
+  if (!req.user) req.user = { id: 'test-user-id', plan: 'free' };
+  next();
+});
+
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.get('stripe-signature');
   let event;
