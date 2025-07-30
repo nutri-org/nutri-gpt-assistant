@@ -1,0 +1,50 @@
+REPLIT START
+# 1.  Dependencies ------------------------------------------------------
+npm install @supabase/supabase-js         --save
+npm install stripe@latest                --save-dev
+
+# 2.  Unified Supabase client ------------------------------------------
+#    Create   server/lib/supabase.js
+#    (If file exists, overwrite with this content.)
+const { createClient } = require('@supabase/supabase-js');
+
+const supabaseUrl  = process.env.SUPABASE_URL;
+const supabaseKey  = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+const supabase     = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false }});
+
+module.exports = supabase;
+
+# 3.  Fix import paths ---------------------------------------------------
+#    Replace every   require('../lib/supabase')   with
+#                    require('../server/lib/supabase')
+#    The affected files are:
+#      • middleware/quota.js
+#      • server/routes/datasets.js
+#    Run ‘grep -R "../lib/supabase" -n’ to confirm none remain.
+
+# 4.  Quota middleware: defensive guard ---------------------------------
+#    (Prevents crash in unauthenticated requests used by some routes/tests)
+#    Top of middleware/quota.js — insert:
+if (!req.user) return res.status(401).json({ error: 'AUTH_REQUIRED' });
+
+# 5.  settings.test.js – supply auth header -----------------------------
+#    In every supertest call add:
+.set('Authorization', 'Bearer test-secret-token')
+#    The file already has goodToken; reuse it.
+
+# 6.  Remove unused variables to satisfy ESLint -------------------------
+#    • tests/quota.test.js   – delete ‘const jwt = …’ or rename to ‘_jwt’.
+#    • tests/auth.test.js    – ensure openaiClient isn’t imported if unused.
+#    • server/routes/datasets.js – delete ‘uploadData’ temp var.
+
+# 7.  Re‑run quality gates ----------------------------------------------
+npm run lint
+npm test
+
+# 8.  Commit on feature branch ------------------------------------------
+#    git checkout -b feat/r1-fixes
+#    git add .
+#    git commit -m "R1: supabase/stripe wiring, auth fixes, tests green"
+#    (Do NOT push – the user will push manually.)
+
+REPLIT END
