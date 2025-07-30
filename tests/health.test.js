@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { app } = require('../server/server');
+const app = require('../server/app');
 
 describe('GET /api/healthz', () => {
   test('should return 200 and JSON with status, version, uptime keys', async () => {
@@ -15,10 +15,6 @@ describe('GET /api/healthz', () => {
   });
 });
 
-afterAll(async () => {
-  // Close any open handles from the imported app
-  if (app && app.close) {
-    await new Promise(resolve => app.close(resolve));
-  }
+afterAll(() => {
   jest.clearAllMocks();
 });

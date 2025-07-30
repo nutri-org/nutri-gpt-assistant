@@ -1,7 +1,7 @@
 const request = require('supertest');
 const jwt     = require('jsonwebtoken');
 
-const { app } = require('../server/server');
+const app = require('../server/app');
 
 const secret   = process.env.JWT_SECRET;
 const goodToken = jwt.sign({ id: 'u1', plan: 'free' }, secret);
@@ -27,10 +27,6 @@ describe('auth middleware', () => {
   });
 });
 
-afterAll(async () => {
-  // Close any open handles from the imported app
-  if (app && app.close) {
-    await new Promise(resolve => app.close(resolve));
-  }
+afterAll(() => {
   jest.clearAllMocks();
 });
