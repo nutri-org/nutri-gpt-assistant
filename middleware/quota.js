@@ -1,4 +1,4 @@
-const supabase = require('../lib/supabase');
+const supabase = require('../server/lib/supabase');
 
 module.exports = function quota() {
   return async (req, res, next) => {
