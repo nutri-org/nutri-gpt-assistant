@@ -25,7 +25,6 @@ jest.mock('../server/lib/supabase', () => ({
   }))
 }));
 
-const supabase = require('../server/lib/supabase');
 const billingRoutes = require('../server/routes/billing');
 
 describe('Billing Routes', () => {

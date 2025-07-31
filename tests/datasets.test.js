@@ -39,14 +39,7 @@ jest.mock('../server/lib/supabase', () => ({
   }
 }));
 
-// Mock auth middleware 
-const mockAuth = jest.fn(() => (req, res, next) => {
-  req.user = { id: 'test-user-id', plan: 'limited' };
-  next();
-});
-
-// Mock quota middleware 
-const mockQuota = jest.fn((req, res, next) => next());
+// Mock auth and quota middleware are handled inline in the test app setup
 
 describe('Datasets Routes', () => {
   let app;
@@ -121,7 +114,7 @@ describe('Datasets Routes', () => {
           }
         });
 
-      } catch (error) {
+      } catch {
         res.status(500).json({ error: 'Internal server error' });
       }
     });
