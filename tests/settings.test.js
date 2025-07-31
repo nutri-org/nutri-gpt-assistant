@@ -1,46 +1,66 @@
+
 const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-// Mock Supabase with proper chain structure
+// Mock functions
+const mockSingle = jest.fn();
+const mockUpsert = jest.fn();
+const mockUpdate = jest.fn();
+
+// Complete Supabase mock with all required methods
 jest.mock('../server/lib/supabase', () => ({
   from: jest.fn(() => ({
     select: jest.fn(() => ({
       eq: jest.fn(() => ({
-        single: jest.fn()
+        single: mockSingle
       }))
     })),
     upsert: jest.fn(() => ({
       select: jest.fn(() => ({
-        single: jest.fn()
+        single: mockUpsert
       }))
     })),
     update: jest.fn(() => ({
       eq: jest.fn(() => ({
         select: jest.fn(() => ({
-          single: jest.fn()
+          single: mockUpdate
         }))
       }))
     }))
   }))
 }));
 
-const supabase = require('../server/lib/supabase');
 const settingsRoutes = require('../server/routes/settings');
 
-const app = express();
-app.use(express.json());
-app.use('/api/assistant/settings', settingsRoutes);
-
 describe('Settings Routes', () => {
+  let app;
+  let server;
   let goodToken;
+
+  beforeAll(() => {
+    app = express();
+    app.use(express.json());
+    app.use('/api/assistant/settings', settingsRoutes);
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSingle.mockReset();
+    mockUpsert.mockReset();
+    mockUpdate.mockReset();
+    
     goodToken = jwt.sign(
       { id: 'test-user-id', plan: 'limited' },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET || 'test-secret'
     );
+  });
+
+  afterEach(async () => {
+    if (server) {
+      await new Promise(resolve => server.close(resolve));
+      server = null;
+    }
   });
 
   afterAll(() => {
@@ -54,7 +74,7 @@ describe('Settings Routes', () => {
       creative_temp: 0.8
     };
 
-    supabase.from().select().eq().single.mockResolvedValue({
+    mockSingle.mockResolvedValue({
       data: mockData,
       error: null
     });
@@ -68,7 +88,7 @@ describe('Settings Routes', () => {
   });
 
   test('returns default settings when none exist', async () => {
-    supabase.from().select().eq().single.mockResolvedValue({
+    mockSingle.mockResolvedValue({
       data: null,
       error: { code: 'PGRST116' }
     });
@@ -89,7 +109,7 @@ describe('Settings Routes', () => {
       creative_temp: 0.9
     };
 
-    supabase.from().upsert().select().single.mockResolvedValue({
+    mockUpsert.mockResolvedValue({
       data: { ...newSettings, owner: 'test-user-id' },
       error: null
     });
@@ -106,7 +126,7 @@ describe('Settings Routes', () => {
   test('partially updates settings', async () => {
     const updateData = { strict_temp: 0.1 };
 
-    supabase.from().update().eq().select().single.mockResolvedValue({
+    mockUpdate.mockResolvedValue({
       data: { strict_temp: 0.1, owner: 'test-user-id' },
       error: null
     });

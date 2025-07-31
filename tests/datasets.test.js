@@ -1,11 +1,12 @@
+
 const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-// Mock Supabase with proper chain structure
+// Complete Supabase mock including storage
 jest.mock('../server/lib/supabase', () => ({
   from: jest.fn(() => ({
-    insert: jest.fn().mockResolvedValue({ error: null })
+    insert: jest.fn()
   })),
   storage: {
     from: jest.fn(() => ({
@@ -17,19 +18,30 @@ jest.mock('../server/lib/supabase', () => ({
 const supabase = require('../server/lib/supabase');
 const datasetsRoutes = require('../server/routes/datasets');
 
-const app = express();
-app.use(express.json());
-app.use('/api/datasets', datasetsRoutes);
-
 describe('Datasets Routes', () => {
+  let app;
+  let server;
   let goodToken;
+
+  beforeAll(() => {
+    app = express();
+    app.use(express.json());
+    app.use('/api/datasets', datasetsRoutes);
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
     goodToken = jwt.sign(
       { id: 'test-user-id', plan: 'limited' },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET || 'test-secret'
     );
+  });
+
+  afterEach(async () => {
+    if (server) {
+      await new Promise(resolve => server.close(resolve));
+      server = null;
+    }
   });
 
   afterAll(() => {
