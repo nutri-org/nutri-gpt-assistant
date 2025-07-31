@@ -40,7 +40,7 @@ jest.mock('../server/lib/supabase', () => ({
 }));
 
 // Mock auth middleware - return the middleware function directly
-jest.mock('../../middleware/auth', () => {
+jest.mock('../middleware/auth', () => {
   return jest.fn(() => (req, res, next) => {
     req.user = { id: 'test-user-id', plan: 'limited' };
     next();
@@ -48,7 +48,7 @@ jest.mock('../../middleware/auth', () => {
 });
 
 // Mock quota middleware - return the middleware function directly  
-jest.mock('../../middleware/quota', () => {
+jest.mock('../middleware/quota', () => {
   return jest.fn(() => (req, res, next) => next());
 });
 
