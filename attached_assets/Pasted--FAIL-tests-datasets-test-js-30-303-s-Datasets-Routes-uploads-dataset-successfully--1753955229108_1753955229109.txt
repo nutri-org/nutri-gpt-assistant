@@ -1,0 +1,104 @@
+ FAIL  tests/datasets.test.js (30.303 s)
+  ● Datasets Routes › uploads dataset successfully
+
+    thrown: "Exceeded timeout of 10000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      84 |   });
+      85 |
+    > 86 |   test('uploads dataset successfully', async () => {
+         |   ^
+      87 |     mockUpload.mockResolvedValue({
+      88 |       data: { path: 'test-user-id/dataset.csv' },
+      89 |       error: null
+
+      at test (tests/datasets.test.js:86:3)
+      at Object.describe (tests/datasets.test.js:58:1)
+
+  ● Datasets Routes › handles upload errors
+
+    thrown: "Exceeded timeout of 10000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      121 |   }, 10000);
+      122 |
+    > 123 |   test('handles upload errors', async () => {
+          |   ^
+      124 |     mockUpload.mockResolvedValue({
+      125 |       data: null,
+      126 |       error: { message: 'Storage error' }
+
+      at test (tests/datasets.test.js:123:3)
+      at Object.describe (tests/datasets.test.js:58:1)
+
+  ● Datasets Routes › requires file data
+
+    thrown: "Exceeded timeout of 10000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      139 |   }, 10000);
+      140 |
+    > 141 |   test('requires file data', async () => {
+          |   ^
+      142 |     const response = await request(app)
+      143 |       .post('/api/datasets/upload')
+      144 |       .send({
+
+      at test (tests/datasets.test.js:141:3)
+      at Object.describe (tests/datasets.test.js:58:1)
+
+Test Suites: 1 failed, 6 passed, 7 total
+Tests:       3 failed, 20 passed, 23 total
+Snapshots:   0 total
+Time:        31.997 s
+Ran all test suites.
+
+Jest has detected the following 3 open handles potentially keeping Jest from exiting:
+
+  ●  TCPSERVERWRAP
+
+      109 |
+      110 |     const response = await request(app)
+    > 111 |       .post('/api/datasets/upload')
+          |        ^
+      112 |       .send({
+      113 |         filename: 'test.csv',
+      114 |         fileData: Buffer.from('csv,data\n1,test').toString('base64')
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/datasets.test.js:111:8)
+
+
+  ●  TCPSERVERWRAP
+
+      128 |
+      129 |     const response = await request(app)
+    > 130 |       .post('/api/datasets/upload')
+          |        ^
+      131 |       .send({
+      132 |         filename: 'test.csv',
+      133 |         fileData: Buffer.from('csv,data').toString('base64')
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/datasets.test.js:130:8)
+
+
+  ●  TCPSERVERWRAP
+
+      141 |   test('requires file data', async () => {
+      142 |     const response = await request(app)
+    > 143 |       .post('/api/datasets/upload')
+          |        ^
+      144 |       .send({
+      145 |         filename: 'test-dataset'
+      146 |         // missing fileData
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/datasets.test.js:143:8)
+

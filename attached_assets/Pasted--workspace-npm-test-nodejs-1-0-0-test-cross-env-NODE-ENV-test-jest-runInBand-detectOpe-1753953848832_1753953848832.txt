@@ -1,0 +1,311 @@
+~/workspace$ npm test
+
+> nodejs@1.0.0 test
+> cross-env NODE_ENV=test jest --runInBand --detectOpenHandles --setupFiles ./jest.setup.js --watchAll=false
+
+ FAIL  tests/quota.test.js (45.447 s)
+  ● allows request with sufficient credits
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      41 |
+      42 | /* ────── Tests ────── */
+    > 43 | test('allows request with sufficient credits', async () => {
+         | ^
+      44 |   mockSingle.mockResolvedValueOnce({
+      45 |     data: { remaining_credits: 100 }, error: null
+      46 |   });
+
+      at Object.test (tests/quota.test.js:43:1)
+
+  ● blocks request with insufficient credits
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      51 | });
+      52 |
+    > 53 | test('blocks request with insufficient credits', async () => {
+         | ^
+      54 |   mockSingle.mockResolvedValueOnce({
+      55 |     data: { remaining_credits: 0 }, error: null
+      56 |   });
+
+      at Object.test (tests/quota.test.js:53:1)
+
+  ● allows unlimited plan users
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      61 | });
+      62 |
+    > 63 | test('allows unlimited plan users', async () => {
+         | ^
+      64 |   // For unlimited users, middleware checks req.user.plan before querying DB
+      65 |   const appWithUnlimited = express();
+      66 |   appWithUnlimited.use(express.json());
+
+      at Object.test (tests/quota.test.js:63:1)
+
+ FAIL  tests/datasets.test.js (45.195 s)
+  ● Datasets Routes › uploads dataset successfully
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      34 |   });
+      35 |
+    > 36 |   test('uploads dataset successfully', async () => {
+         |   ^
+      37 |     supabase.storage.from().upload.mockResolvedValue({
+      38 |       data: { path: 'test-user-id/dataset.csv' },
+      39 |       error: null
+
+      at test (tests/datasets.test.js:36:3)
+      at Object.describe (tests/datasets.test.js:31:1)
+
+  ● Datasets Routes › handles upload errors
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      60 |   });
+      61 |
+    > 62 |   test('handles upload errors', async () => {
+         |   ^
+      63 |     supabase.storage.from().upload.mockResolvedValue({
+      64 |       data: null,
+      65 |       error: { message: 'Storage error' }
+
+      at test (tests/datasets.test.js:62:3)
+      at Object.describe (tests/datasets.test.js:31:1)
+
+  ● Datasets Routes › requires file attachment
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      81 |   });
+      82 |
+    > 83 |   test('requires file attachment', async () => {
+         |   ^
+      84 |     const goodToken = jwt.sign(
+      85 |       { id: 'test-user-id', plan: 'limited' },
+      86 |       process.env.JWT_SECRET
+
+      at test (tests/datasets.test.js:83:3)
+      at Object.describe (tests/datasets.test.js:31:1)
+
+ FAIL  tests/settings.test.js
+  ● Settings Routes › gets existing settings
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      63 |       .set('Authorization', `Bearer ${goodToken}`);
+      64 |
+    > 65 |     expect(res.status).toBe(200);
+         |                        ^
+      66 |     expect(res.body.strict_prompt).toBe('Test prompt');
+      67 |   });
+      68 |
+
+      at Object.toBe (tests/settings.test.js:65:24)
+
+  ● Settings Routes › returns default settings when none exist
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      82 |       .set('Authorization', `Bearer ${goodToken}`);
+      83 |
+    > 84 |     expect(res.status).toBe(200);
+         |                        ^
+      85 |     expect(res.body.strict_temp).toBe(0.2);
+      86 |     expect(res.body.creative_temp).toBe(0.7);
+      87 |   });
+
+      at Object.toBe (tests/settings.test.js:84:24)
+
+  ● Settings Routes › creates new settings
+
+    TypeError: supabase.from(...).upsert(...).select is not a function
+
+      93 |     };
+      94 |
+    > 95 |     supabase.from().upsert().select().single.mockResolvedValue({
+         |                              ^
+      96 |       data: { ...newSettings, owner: 'test-user-id' },
+      97 |       error: null
+      98 |     });
+
+      at Object.select (tests/settings.test.js:95:30)
+
+  ● Settings Routes › partially updates settings
+
+    TypeError: supabase.from(...).update(...).eq(...).select is not a function
+
+      115 |     const updateData = { strict_temp: 0.1 };
+      116 |
+    > 117 |     supabase.from().update().eq().select().single.mockResolvedValue({
+          |                                   ^
+      118 |       data: { strict_temp: 0.1, owner: 'test-user-id' },
+      119 |       error: null
+      120 |     });
+
+      at Object.select (tests/settings.test.js:117:35)
+
+ FAIL  tests/billing.test.js
+  ● Test suite failed to run
+
+    ReferenceError: routerr is not defined
+
+      29 | });
+      30 |
+    > 31 | module.exports = routerr;
+         |                  ^
+
+      at Object.routerr (server/routes/billing.js:31:18)
+      at Object.require (tests/billing.test.js:25:23)
+
+ PASS  tests/chat.test.js
+  ● Console
+
+    console.error
+      Chat endpoint error: Error: UPSTREAM_ERROR
+          at Object.<anonymous> (/home/runner/workspace/tests/chat.test.js:120:47)
+          at Promise.finally.completed (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+          at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+          at processTicksAndRejections (node:internal/process/task_queues:105:5)
+          at _runTest (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+          at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+          at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+          at run (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+          at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+          at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/runner.js:101:19)
+          at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/index.js:275:16)
+          at runTest (/home/runner/workspace/node_modules/jest-runner/build/index.js:343:7)
+
+      45 |
+      46 |   } catch (error) {
+    > 47 |     console.error('Chat endpoint error:', error);
+         |             ^
+      48 |
+      49 |     if (error.message === 'UPSTREAM_ERROR') {
+      50 |       return res.status(500).json({ error: 'UPSTREAM_ERROR' });
+
+      at error (server/routes/chat.js:47:13)
+
+ PASS  tests/health.test.js
+ PASS  tests/auth.test.js
+
+Test Suites: 4 failed, 3 passed, 7 total
+Tests:       10 failed, 11 passed, 21 total
+Snapshots:   0 total
+Time:        92.127 s
+Ran all test suites.
+
+Jest has detected the following 6 open handles potentially keeping Jest from exiting:
+
+  ●  TCPSERVERWRAP
+
+      46 |   });
+      47 |
+    > 48 |   const res = await request(app).post('/test');
+         |                                  ^
+      49 |   expect(res.status).toBe(200);
+      50 |   expect(res.body.ok).toBe(true);
+      51 | });
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/quota.test.js:48:34)
+
+
+  ●  TCPSERVERWRAP
+
+      56 |   });
+      57 |
+    > 58 |   const res = await request(app).post('/test');
+         |                                  ^
+      59 |   expect(res.status).toBe(403);
+      60 |   expect(res.body.error).toBe('QUOTA_EXCEEDED');
+      61 | });
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/quota.test.js:58:34)
+
+
+  ●  TCPSERVERWRAP
+
+      69 |   appWithUnlimited.post('/test', (_req, res) => res.json({ ok: true }));
+      70 |
+    > 71 |   const res = await request(appWithUnlimited).post('/test');
+         |                                               ^
+      72 |   expect(res.status).toBe(200);
+      73 |   expect(res.body.ok).toBe(true);
+      74 | });
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/quota.test.js:71:47)
+
+
+  ●  TCPSERVERWRAP
+
+      51 |
+      52 |     const response = await request(app)
+    > 53 |       .post('/api/datasets/upload')
+         |        ^
+      54 |       .attach('file', Buffer.from('csv,data\n1,test'), 'test.csv')
+      55 |       .field('name', 'test-dataset')
+      56 |       .set('Authorization', `Bearer ${goodToken}`);
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/datasets.test.js:53:8)
+
+
+  ●  TCPSERVERWRAP
+
+      72 |
+      73 |     const response = await request(app)
+    > 74 |       .post('/api/datasets/upload')
+         |        ^
+      75 |       .attach('file', Buffer.from('csv,data'), 'test.csv')
+      76 |       .field('name', 'test-dataset')
+      77 |       .set('Authorization', `Bearer ${goodToken}`);
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/datasets.test.js:74:8)
+
+
+  ●  TCPSERVERWRAP
+
+      88 |
+      89 |     const response = await request(app)
+    > 90 |       .post('/api/datasets/upload')
+         |        ^
+      91 |       .field('name', 'test-dataset')
+      92 |       .set('Authorization', `Bearer ${goodToken}`);
+      93 |
+
+      at Test.serverAddress (node_modules/supertest/lib/test.js:63:35)
+      at new Test (node_modules/supertest/lib/test.js:49:14)
+      at Object.obj.<computed> [as post] (node_modules/supertest/index.js:39:18)
+      at Object.post (tests/datasets.test.js:90:8)

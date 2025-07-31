@@ -1,6 +1,13 @@
+// --- jest mocks (hoisted) ---------------------------------
 jest.mock('../server/lib/openaiClient', () => ({
-  completion: jest.fn()
+  // the route expects { role, content } already unwrapped
+  completion: jest.fn().mockResolvedValue({ role: 'assistant', content: { dummy: true } })
 }));
+
+jest.mock('../server/lib/guardRails', () => ({
+  checkAllergenConflicts: jest.fn().mockReturnValue({ safe: true })
+}));
+// -----------------------------------------------------------
 
 const openaiClient = require('../server/lib/openaiClient');
 const app          = require('../server/app');        // pure app, no server
@@ -9,11 +16,6 @@ process.env.AUTH_TOKEN = 'test-secret-token';
 
 const request = require('supertest');
 const jwt     = require('jsonwebtoken');
-
-// Mock guardRails after the main imports
-jest.mock('../server/lib/guardRails', () => ({
-  checkAllergenConflicts: jest.fn()
-}));
 
 const { checkAllergenConflicts } = require('../server/lib/guardRails');
 

@@ -1,0 +1,196 @@
+Private Dev URL
+Teams
+Restrict Dev URL access to authenticated editors only.
+When this option is disabled, anyone with the Dev URL can access your app preview.
+
+Dev URL:
+https://d2e95582-a7da-40b6-a571-348944f23612-00-3q8ljgtw8hnnp.picard.replit.dev/
+Dev URLs are temporary and will sleep after you leave the workspace.
+Ports
+Learn more
+Internal Port
+External Port
+Name
+Pid
+0.0.0.0:5000
+node
+10689
+0.0.0.0:32839
+0.0.0.0:33235
+No ports available
+node
+11584
+0.0.0.0:33441
+No ports available
+node
+12120
+0.0.0.0:33691
+No ports available
+node
+13365
+0.0.0.0:33979
+No ports available
+node
+12120
+0.0.0.0:34159
+0.0.0.0:34631
+0.0.0.0:35043
+No ports available
+node
+12703
+0.0.0.0:35083
+No ports available
+node
+13866
+0.0.0.0:35099
+No ports available
+node
+12703
+0.0.0.0:35285
+No ports available
+node
+13079
+0.0.0.0:35485
+No ports available
+node
+11584
+0.0.0.0:35723
+No ports available
+node
+14388
+0.0.0.0:35853
+No ports available
+node
+13365
+0.0.0.0:36305
+No ports available
+node
+14388
+0.0.0.0:36767
+No ports available
+node
+13866
+0.0.0.0:36931
+No ports available
+node
+13079
+0.0.0.0:37045
+No ports available
+node
+13866
+0.0.0.0:37299
+0.0.0.0:38027
+0.0.0.0:38033
+0.0.0.0:38461
+No ports available
+node
+13866
+0.0.0.0:38497
+No ports available
+node
+12703
+0.0.0.0:38697
+No ports available
+node
+14388
+0.0.0.0:38951
+No ports available
+node
+14388
+0.0.0.0:38985
+No ports available
+node
+13866
+0.0.0.0:39383
+No ports available
+node
+14388
+0.0.0.0:39401
+No ports available
+node
+11584
+0.0.0.0:39481
+No ports available
+node
+12120
+0.0.0.0:39693
+No ports available
+node
+12120
+0.0.0.0:39811
+0.0.0.0:40121
+0.0.0.0:40149
+0.0.0.0:40845
+No ports available
+node
+13365
+0.0.0.0:41317
+No ports available
+node
+13365
+0.0.0.0:41363
+No ports available
+node
+13866
+0.0.0.0:41569
+No ports available
+node
+13079
+0.0.0.0:41785
+No ports available
+node
+13079
+0.0.0.0:42551
+No ports available
+node
+13079
+0.0.0.0:42757
+0.0.0.0:43069
+No ports available
+node
+12120
+0.0.0.0:43297
+No ports available
+node
+11584
+0.0.0.0:43589
+No ports available
+node
+11584
+0.0.0.0:43987
+0.0.0.0:44191
+No ports available
+node
+12703
+0.0.0.0:44713
+No ports available
+node
+12703
+0.0.0.0:44719
+0.0.0.0:45085
+No ports available
+node
+12703
+0.0.0.0:45123
+0.0.0.0:45255
+No ports available
+node
+11584
+0.0.0.0:45457
+No ports available
+node
+13365
+0.0.0.0:45539
+No ports available
+node
+13079
+0.0.0.0:45689
+0.0.0.0:46549
+0.0.0.0:46859
+No ports available
+node
+13365
+0.0.0.0:46869
+No ports available
+node
+12120

@@ -1,0 +1,32 @@
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+runner       1  0.3  0.1 8413640 105776 ?      Ssl  Jul30   3:19 /nix/store/39jw
+runner      16  0.2  0.3 13233676 232868 ?     Sl   Jul30   2:08 pid2 --no-depre
+runner      56  0.0  0.0   3984  2688 ?        S    Jul30   0:00 nix-editor --re
+runner     384  0.0  0.0  10612  6784 pts/1    Ss+  Jul30   0:00 /nix/store/0nxv
+runner    1540  0.0  0.0  10556  6784 pts/2    Ss+  Jul30   0:00 /nix/store/0nxv
+runner    4835  0.0  0.0  10556  6912 pts/3    Ss+  Jul30   0:00 /nix/store/0nxv
+runner    5495  0.0  0.0  10556  7040 pts/4    Ss+  Jul30   0:00 /nix/store/0nxv
+runner    6073  0.0  0.0  10556  6784 pts/5    Ss+  01:35   0:00 /nix/store/0nxv
+runner    7030  0.0  0.0  10556  6912 pts/6    Ss+  03:16   0:00 /nix/store/0nxv
+runner    7617  0.0  0.0  10556  6912 pts/7    Ss+  03:40   0:00 /nix/store/0nxv
+runner    7795  0.0  0.0  10556  7040 pts/8    Ss+  03:43   0:00 /nix/store/0nxv
+runner    8116  0.0  0.0  10556  6912 pts/9    Ss+  07:15   0:00 /nix/store/0nxv
+runner    8338  0.0  0.0  10556  6912 pts/10   Ss+  07:32   0:00 /nix/store/0nxv
+runner    8703  0.0  0.0  10556  6912 pts/11   Ss+  07:49   0:00 /nix/store/0nxv
+runner    8969  0.0  0.0  10556  6784 pts/12   Ss+  08:08   0:00 /nix/store/0nxv
+runner    9394  0.0  0.0  10556  7040 pts/13   Ss+  08:15   0:00 /nix/store/0nxv
+runner    9686  0.0  0.0  10556  6784 pts/14   Ss+  08:18   0:00 /nix/store/0nxv
+runner    9978  0.0  0.0  10556  6912 pts/15   Ss+  08:20   0:00 /nix/store/0nxv
+runner   10316  0.0  0.0  10556  6784 pts/16   Ss+  08:23   0:00 /nix/store/0nxv
+runner   10471  0.0  0.0  10556  7040 pts/17   Ss   08:28   0:00 /nix/store/0nxv
+runner   10588  0.0  0.0 205724 26880 ?        Sl   08:28   0:00 /nix/store/r1sm
+runner   10677  0.0  0.1 1118376 69764 pts/17  Sl+  08:30   0:00 npm start
+runner   10688  0.0  0.0   2916  1920 pts/17   S+   08:30   0:00 sh -c node inde
+runner   10689  0.0  0.1 1022212 71136 pts/17  Sl+  08:30   0:00 /nix/store/r1sm
+runner   10706  0.0  0.0   8192  4608 pts/0    Ss+  08:31   0:00 /nix/store/0nxv
+runner   10757  0.0  0.0   2912  1792 ?        S    08:33   0:00 sh -c /nix/stor
+runner   10759  0.0  0.0 1652856 26428 ?       Sl   08:33   0:00 /nix/store/25ra
+runner   10914  0.0  0.0   2912  1792 ?        S    08:33   0:00 sh -c /nix/stor
+runner   10915  0.0  0.0 1121800 63264 ?       Sl   08:33   0:00 /nix/store/r1sm
+runner   11411 14.2  0.1 2119076 75616 ?       S    08:44   0:00 pid2 --no-depre
+runner   11412 30.7  0.0  11220  4224 pts/18   Rs+  08:44   0:00 ps aux
