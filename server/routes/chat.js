@@ -3,7 +3,7 @@ const { asyncHandler, createError } = require('../../middleware/error');
 const openaiClient = require('../lib/openaiClient');
 const { buildPrompt } = require('../lib/buildPrompt');
 const { checkAllergenConflicts } = require('../lib/guardRails');
-const auth = require('../middleware/auth');
+const auth = require('../../middleware/auth');
 const validate = require('../middleware/validate');
 
 const router = express.Router();
