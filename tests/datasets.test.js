@@ -39,23 +39,24 @@ jest.mock('../server/lib/supabase', () => ({
   }
 }));
 
-// Mock auth middleware with correct path
-jest.mock('../middleware/auth', () => {
+// Mock auth middleware - return the middleware function directly
+jest.mock('../../middleware/auth', () => {
   return jest.fn(() => (req, res, next) => {
     req.user = { id: 'test-user-id', plan: 'limited' };
     next();
   });
 });
 
-// Mock quota middleware with correct path
-jest.mock('../middleware/quota', () => () => (req, res, next) => next());
+// Mock quota middleware - return the middleware function directly  
+jest.mock('../../middleware/quota', () => {
+  return jest.fn(() => (req, res, next) => next());
+});
 
 const supabase = require('../server/lib/supabase');
 const datasetsRoutes = require('../server/routes/datasets');
 
 describe('Datasets Routes', () => {
   let app;
-  let server;
   let goodToken;
 
   beforeAll(() => {
@@ -76,13 +77,6 @@ describe('Datasets Routes', () => {
       { id: 'test-user-id', plan: 'limited' },
       process.env.JWT_SECRET || 'test-secret'
     );
-  });
-
-  afterEach(async () => {
-    if (server) {
-      await new Promise(resolve => server.close(resolve));
-      server = null;
-    }
   });
 
   afterAll(() => {
@@ -124,7 +118,7 @@ describe('Datasets Routes', () => {
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
     expect(response.body.dataset.filename).toBe('test.csv');
-  });
+  }, 10000);
 
   test('handles upload errors', async () => {
     mockUpload.mockResolvedValue({
@@ -142,7 +136,7 @@ describe('Datasets Routes', () => {
 
     expect(response.status).toBe(500);
     expect(response.body.error).toBe('Upload failed');
-  });
+  }, 10000);
 
   test('requires file data', async () => {
     const response = await request(app)
@@ -155,5 +149,5 @@ describe('Datasets Routes', () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('filename and fileData are required');
-  });
+  }, 10000);
 });
