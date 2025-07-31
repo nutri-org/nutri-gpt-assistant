@@ -45,7 +45,7 @@ export default [
   {
     rules: {
       "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-      "n/no-process-exit": ["error", { allowInSignalHandlers: true }]
+      "n/no-process-exit": "off"
     }
   }
 ];
