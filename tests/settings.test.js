@@ -1,4 +1,3 @@
-
 const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
@@ -41,7 +40,7 @@ describe('Settings Routes', () => {
   beforeAll(() => {
     app = express();
     app.use(express.json());
-    app.use('/api/assistant/settings', settingsRoutes);
+    app.use('/api/settings', settingsRoutes);
   });
 
   beforeEach(() => {
@@ -49,7 +48,7 @@ describe('Settings Routes', () => {
     mockSingle.mockReset();
     mockUpsert.mockReset();
     mockUpdate.mockReset();
-    
+
     goodToken = jwt.sign(
       { id: 'test-user-id', plan: 'limited' },
       process.env.JWT_SECRET || 'test-secret'
@@ -80,7 +79,7 @@ describe('Settings Routes', () => {
     });
 
     const res = await request(app)
-      .get('/api/assistant/settings')
+      .get('/api/settings')
       .set('Authorization', `Bearer ${goodToken}`);
 
     expect(res.status).toBe(200);
@@ -94,7 +93,7 @@ describe('Settings Routes', () => {
     });
 
     const res = await request(app)
-      .get('/api/assistant/settings')
+      .get('/api/settings')
       .set('Authorization', `Bearer ${goodToken}`);
 
     expect(res.status).toBe(200);
@@ -115,7 +114,7 @@ describe('Settings Routes', () => {
     });
 
     const res = await request(app)
-      .post('/api/assistant/settings')
+      .post('/api/settings')
       .set('Authorization', `Bearer ${goodToken}`)
       .send(newSettings);
 
@@ -132,7 +131,7 @@ describe('Settings Routes', () => {
     });
 
     const res = await request(app)
-      .patch('/api/assistant/settings')
+      .patch('/api/settings')
       .set('Authorization', `Bearer ${goodToken}`)
       .send(updateData);
 

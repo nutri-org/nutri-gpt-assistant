@@ -39,7 +39,7 @@ jest.mock('../server/lib/supabase', () => ({
 }));
 
 // Mock auth middleware
-jest.mock('../../middleware/auth', () => {
+jest.mock('../middleware/auth', () => {
   return jest.fn(() => (req, res, next) => {
     req.user = { id: 'test-user-id', plan: 'limited' };
     next();
@@ -47,7 +47,7 @@ jest.mock('../../middleware/auth', () => {
 });
 
 // Mock quota middleware
-jest.mock('../../middleware/quota', () => (req, res, next) => next());
+jest.mock('../middleware/quota', () => (req, res, next) => next());
 
 const supabase = require('../server/lib/supabase');
 const datasetsRoutes = require('../server/routes/datasets');

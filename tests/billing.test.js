@@ -1,4 +1,3 @@
-
 const request = require('supertest');
 const express = require('express');
 
@@ -15,7 +14,7 @@ jest.mock('stripe', () => {
 jest.mock('../server/lib/supabase', () => ({
   from: jest.fn(() => ({
     update: jest.fn(() => ({
-      eq: jest.fn()
+      eq: jest.fn(() => Promise.resolve({ error: null }))
     }))
   }))
 }));
@@ -34,22 +33,20 @@ describe('Billing Routes', () => {
   });
 
   test('handles valid Stripe webhook', async () => {
-    const mockEvent = {
+    const stripe = require('stripe')();
+    stripe.webhooks.constructEvent.mockReturnValue({
       type: 'checkout.session.completed',
       data: {
         object: {
-          customer: 'cus_test123',
-          metadata: { plan: 'limited' }
+          customer_email: 'test@example.com',
+          metadata: { plan: 'premium' }
         }
       }
-    };
-
-    stripe.webhooks.constructEvent.mockReturnValue(mockEvent);
-    supabase.from().update().eq.mockResolvedValue({ error: null });
+    });
 
     const response = await request(app)
       .post('/api/billing/webhook')
-      .set('stripe-signature', 'test-signature')
+      .set('stripe-signature', 'valid-signature')
       .send(Buffer.from('test-payload'));
 
     expect(response.status).toBe(200);
@@ -57,6 +54,7 @@ describe('Billing Routes', () => {
   });
 
   test('rejects invalid webhook signature', async () => {
+    const stripe = require('stripe')();
     stripe.webhooks.constructEvent.mockImplementation(() => {
       throw new Error('Invalid signature');
     });
@@ -70,16 +68,15 @@ describe('Billing Routes', () => {
   });
 
   test('ignores non-checkout events', async () => {
-    const mockEvent = {
-      type: 'payment_intent.succeeded',
+    const stripe = require('stripe')();
+    stripe.webhooks.constructEvent.mockReturnValue({
+      type: 'invoice.payment_succeeded',
       data: { object: {} }
-    };
-
-    stripe.webhooks.constructEvent.mockReturnValue(mockEvent);
+    });
 
     const response = await request(app)
       .post('/api/billing/webhook')
-      .set('stripe-signature', 'test-signature')
+      .set('stripe-signature', 'valid-signature')
       .send(Buffer.from('test-payload'));
 
     expect(response.status).toBe(200);
