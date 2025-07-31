@@ -25,7 +25,8 @@ jest.mock('../server/lib/supabase', () => ({
     delete: jest.fn(() => ({
       eq: jest.fn()
     }))
-  }))
+  })),
+  rpc: jest.fn(() => Promise.resolve({ error: null }))
 }));
 
 const supabase = require('../server/lib/supabase');

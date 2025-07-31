@@ -1,87 +1,66 @@
-const request = require('supertest');
-const express = require('express');
-const quota = require('../middleware/quota');
+// tests/quota.test.js   ← replace the whole file with this
+const request  = require('supertest');
+const express  = require('express');
+const quota    = require('../middleware/quota');
 
-// Mock Supabase
-jest.mock('../server/lib/supabase', () => ({
-  from: jest.fn(() => ({
-    select: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        single: jest.fn()
-      }))
-    })),
-    update: jest.fn(() => ({
-      eq: jest.fn()
-    }))
-  }))
-}));
-
+// ────── Supabase mock ──────
+jest.mock('../server/lib/supabase', () => {
+  // one self‑returning stub object
+  const stub = {
+    /* chainable helpers – always return the same stub */
+    from   : jest.fn(() => stub),
+    select : jest.fn(() => stub),
+    eq     : jest.fn(() => stub),
+    update : jest.fn(() => stub),
+    /* leaf helpers we override in each test */
+    single : jest.fn(),
+    rpc    : jest.fn(() => Promise.resolve({ error: null }))
+  };
+  return stub;
+});
 const supabase = require('../server/lib/supabase');
 
+// ────── Express app with mocked auth ──────
 const app = express();
 app.use(express.json());
-
-// Mock auth middleware
-app.use((req, res, next) => {
-  req.user = { id: 'test-user-id' };
-  next();
-});
-
+app.use((req, res, next) => { req.user = { id: 'test-user-id' }; next(); });
 app.use(quota);
-app.post('/test', (req, res) => res.json({ success: true }));
+app.post('/test', (_req, res) => res.json({ ok: true }));
 
-describe('Quota Middleware', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+// ────── test helpers ──────
+beforeEach(() => {
+  jest.clearAllMocks();               // wipe call history
+  supabase.single.mockReset();        // keep the fn but clear behaviour
+});
+afterAll(() => jest.resetAllMocks()); // tidy up for Jest
+
+/* ────── Tests ────── */
+test('allows request with sufficient credits', async () => {
+  supabase.single.mockResolvedValueOnce({
+    data: { plan: 'limited', remaining_credits: 100 }, error: null
   });
 
-  test('allows request with sufficient credits', async () => {
-    supabase.from().select().eq().single.mockResolvedValue({
-      data: { plan: 'limited', remaining_credits: 100 },
-      error: null
-    });
-
-    supabase.from().update().eq.mockResolvedValue({
-      error: null
-    });
-
-    const response = await request(app)
-      .post('/test')
-      .send({});
-
-    expect(response.status).toBe(200);
-    expect(response.body.success).toBe(true);
-  });
-
-  test('blocks request with insufficient credits', async () => {
-    supabase.from().select().eq().single.mockResolvedValue({
-      data: { plan: 'limited', remaining_credits: 0 },
-      error: null
-    });
-
-    const response = await request(app)
-      .post('/test')
-      .send({});
-
-    expect(response.status).toBe(403);
-    expect(response.body.error).toBe('QUOTA_EXCEEDED');
-  });
-
-  test('allows unlimited plan users', async () => {
-    supabase.from().select().eq().single.mockResolvedValue({
-      data: { plan: 'unlimited', remaining_credits: null },
-      error: null
-    });
-
-    const response = await request(app)
-      .post('/test')
-      .send({});
-
-    expect(response.status).toBe(200);
-    expect(response.body.success).toBe(true);
-  });
+  const res = await request(app).post('/test');
+  expect(res.status).toBe(200);
+  expect(res.body.ok).toBe(true);
 });
 
-afterAll(async () => {
-  await new Promise(res => setTimeout(res, 0)); // let supertest finish
+test('blocks request with insufficient credits', async () => {
+  supabase.single.mockResolvedValueOnce({
+    data: { plan: 'limited', remaining_credits: 0 }, error: null
+  });
+
+  const res = await request(app).post('/test');
+  expect(res.status).toBe(403);
+  expect(res.body.error).toBe('QUOTA_EXCEEDED');
+});
+
+test('allows unlimited plan users', async () => {
+  supabase.single.mockResolvedValueOnce({
+    data: { plan: 'unlimited', remaining_credits: null }, error: null
+  });
+
+  const res = await request(app).post('/test');
+  expect(res.status).toBe(200);
+  expect(res.body.ok).toBe(true);
 });
