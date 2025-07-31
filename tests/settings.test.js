@@ -2,7 +2,7 @@ const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-// Mock Supabase
+// Mock Supabase with proper chain structure
 jest.mock('../server/lib/supabase', () => ({
   from: jest.fn(() => ({
     select: jest.fn(() => ({
@@ -10,14 +10,18 @@ jest.mock('../server/lib/supabase', () => ({
         single: jest.fn()
       }))
     })),
-    insert: jest.fn(() => Promise.resolve({ error: null })),
+    upsert: jest.fn(() => ({
+      select: jest.fn(() => ({
+        single: jest.fn()
+      }))
+    })),
     update: jest.fn(() => ({
-      eq: jest.fn(() => Promise.resolve({ error: null }))
-    })),
-    delete: jest.fn(() => ({
-      eq: jest.fn(() => Promise.resolve({ error: null }))
-    })),
-    upsert: jest.fn(() => Promise.resolve({ error: null }))
+      eq: jest.fn(() => ({
+        select: jest.fn(() => ({
+          single: jest.fn()
+        }))
+      }))
+    }))
   }))
 }));
 
@@ -26,40 +30,37 @@ const settingsRoutes = require('../server/routes/settings');
 
 const app = express();
 app.use(express.json());
-
-// Mock auth middleware
-app.use((req, res, next) => {
-  req.user = { id: 'test-user-id' };
-  next();
-});
-
-app.use('/api/settings', settingsRoutes);
+app.use('/api/assistant/settings', settingsRoutes);
 
 describe('Settings Routes', () => {
+  let goodToken;
+
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  test('gets existing settings', async () => {
-    const mockSettings = {
-      strict_prompt: 'Test prompt',
-      creative_prompt: 'Creative prompt',
-      strict_temp: 0.2,
-      creative_temp: 0.7
-    };
-
-    supabase.from().select().eq().single.mockResolvedValue({
-      data: mockSettings,
-      error: null
-    });
-
-    const goodToken = jwt.sign(
+    goodToken = jwt.sign(
       { id: 'test-user-id', plan: 'limited' },
       process.env.JWT_SECRET
     );
+  });
+
+  afterAll(() => {
+    jest.resetAllMocks();
+  });
+
+  test('gets existing settings', async () => {
+    const mockData = {
+      strict_prompt: 'Test prompt',
+      strict_temp: 0.3,
+      creative_temp: 0.8
+    };
+
+    supabase.from().select().eq().single.mockResolvedValue({
+      data: mockData,
+      error: null
+    });
 
     const res = await request(app)
-      .get('/api/settings')
+      .get('/api/assistant/settings')
       .set('Authorization', `Bearer ${goodToken}`);
 
     expect(res.status).toBe(200);
@@ -72,13 +73,8 @@ describe('Settings Routes', () => {
       error: { code: 'PGRST116' }
     });
 
-    const goodToken = jwt.sign(
-      { id: 'test-user-id', plan: 'limited' },
-      process.env.JWT_SECRET
-    );
-
     const res = await request(app)
-      .get('/api/settings')
+      .get('/api/assistant/settings')
       .set('Authorization', `Bearer ${goodToken}`);
 
     expect(res.status).toBe(200);
@@ -88,8 +84,9 @@ describe('Settings Routes', () => {
 
   test('creates new settings', async () => {
     const newSettings = {
-      strict_prompt: 'New strict prompt',
-      creative_prompt: 'New creative prompt'
+      strict_prompt: 'Custom prompt',
+      strict_temp: 0.1,
+      creative_temp: 0.9
     };
 
     supabase.from().upsert().select().single.mockResolvedValue({
@@ -97,18 +94,13 @@ describe('Settings Routes', () => {
       error: null
     });
 
-    const goodToken = jwt.sign(
-      { id: 'test-user-id', plan: 'limited' },
-      process.env.JWT_SECRET
-    );
+    const res = await request(app)
+      .post('/api/assistant/settings')
+      .set('Authorization', `Bearer ${goodToken}`)
+      .send(newSettings);
 
-    const response = await request(app)
-      .put('/api/settings')
-      .send(newSettings)
-      .set('Authorization', `Bearer ${goodToken}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.strict_prompt).toBe('New strict prompt');
+    expect(res.status).toBe(200);
+    expect(res.body.strict_prompt).toBe('Custom prompt');
   });
 
   test('partially updates settings', async () => {
@@ -119,35 +111,12 @@ describe('Settings Routes', () => {
       error: null
     });
 
-    const goodToken = jwt.sign(
-      { id: 'test-user-id', plan: 'limited' },
-      process.env.JWT_SECRET
-    );
+    const res = await request(app)
+      .patch('/api/assistant/settings')
+      .set('Authorization', `Bearer ${goodToken}`)
+      .send(updateData);
 
-    const response = await request(app)
-      .patch('/api/settings')
-      .send(updateData)
-      .set('Authorization', `Bearer ${goodToken}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.strict_temp).toBe(0.1);
-  });
-
-  test('deletes settings', async () => {
-    supabase.from().delete().eq.mockResolvedValue({
-      error: null
-    });
-
-    const goodToken = jwt.sign(
-      { id: 'test-user-id', plan: 'limited' },
-      process.env.JWT_SECRET
-    );
-
-    const response = await request(app)
-      .delete('/api/settings')
-      .set('Authorization', `Bearer ${goodToken}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe('Settings reset to defaults');
+    expect(res.status).toBe(200);
+    expect(res.body.strict_temp).toBe(0.1);
   });
 });
