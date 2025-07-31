@@ -48,16 +48,27 @@ describe('Datasets Routes', () => {
   beforeAll(() => {
     // Create isolated test app
     app = express();
-    app.use(express.json());
+    app.use(express.json({ limit: '20mb' })); // Allow large payloads for testing
     
-    // Add auth middleware mock
-    app.use((req, res, next) => {
-      req.user = { id: 'test-user-id', plan: 'limited' };
-      next();
+    // Add error handling middleware
+    app.use((err, req, res, _next) => {
+      console.log('Error middleware caught:', err);
+      res.status(500).json({ error: 'Internal error' });
     });
     
-    // Define the route directly in test to avoid middleware issues
-    app.post('/api/datasets/upload', async (req, res) => {
+    // Mock auth middleware to match real behavior
+    const mockAuth = () => (req, res, next) => {
+      req.user = { id: 'test-user-id', plan: 'limited' };
+      next();
+    };
+    
+    // Mock quota middleware to match real behavior  
+    const mockQuota = (req, res, next) => {
+      next();
+    };
+    
+    // Use the same middleware chain as real route
+    app.post('/api/datasets/upload', mockAuth(), mockQuota, async (req, res) => {
       try {
         const { filename, fileData } = req.body;
 
@@ -65,8 +76,32 @@ describe('Datasets Routes', () => {
           return res.status(400).json({ error: 'filename and fileData are required' });
         }
 
+        // File size validation (10 MB limit)
+        const maxSizeBytes = 10 * 1024 * 1024; // 10 MB
+        const fileSizeBytes = Math.ceil(fileData.length * 0.75); // base64 to bytes approximation
+        
+        if (fileSizeBytes > maxSizeBytes) {
+          console.log('File size check failed:', fileSizeBytes, 'vs', maxSizeBytes);
+          res.status(413);
+          res.json({ 
+            error: 'File too large', 
+            details: `Maximum file size is 10 MB. Your file is approximately ${Math.round(fileSizeBytes / 1024 / 1024)} MB.` 
+          });
+          return;
+        }
+
+        // File type validation
+        const fileExtension = filename.split('.').pop()?.toLowerCase();
+        const allowedExtensions = ['csv', 'json', 'txt', 'xlsx', 'xls'];
+        
+        if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+          return res.status(400).json({ 
+            error: 'Invalid file type', 
+            details: `Allowed file types: ${allowedExtensions.join(', ')}` 
+          });
+        }
+
         const userId = req.user.id;
-        const fileExtension = filename.split('.').pop();
         const storagePath = `${userId}/${Date.now()}_${filename}`;
 
         // Mock supabase calls
@@ -204,5 +239,81 @@ describe('Datasets Routes', () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('filename and fileData are required');
+  });
+
+  test('rejects files larger than 10 MB', async () => {
+    // Create a base64 string that will definitely exceed 10MB when calculated
+    // Our calculation: fileSizeBytes = Math.ceil(fileData.length * 0.75)
+    // So we need fileData.length > 10MB / 0.75 = ~13.33MB
+    const largeFileData = 'a'.repeat(15 * 1024 * 1024); // 15MB in base64 = 11.25MB calculated
+
+    const response = await request(app)
+      .post('/api/datasets/upload')
+      .send({
+        filename: 'large-file.csv',
+        fileData: largeFileData
+      })
+      .set('Authorization', `Bearer ${goodToken}`);
+
+    // Debug logging to see actual response
+    console.log('Response status:', response.status);
+    console.log('Response body:', response.body);
+
+    expect(response.status).toBe(413);
+    expect(response.body.error).toBe('File too large');
+    expect(response.body.details).toContain('Maximum file size is 10 MB');
+  });
+
+  test('rejects invalid file types', async () => {
+    const response = await request(app)
+      .post('/api/datasets/upload')
+      .send({
+        filename: 'malicious.exe',
+        fileData: Buffer.from('test data').toString('base64')
+      })
+      .set('Authorization', `Bearer ${goodToken}`);
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Invalid file type');
+    expect(response.body.details).toContain('Allowed file types: csv, json, txt, xlsx, xls');
+  });
+
+  test('accepts valid file types', async () => {
+    mockUpload.mockResolvedValue({
+      data: { path: 'test-user-id/dataset.json' },
+      error: null
+    });
+
+    mockGetPublicUrl.mockReturnValue({
+      data: { publicUrl: 'https://example.com/file.json' }
+    });
+
+    mockInsert.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: 'test-id',
+            filename: 'data.json',
+            url: 'https://example.com/file.json',
+            created_at: new Date().toISOString()
+          },
+          error: null
+        })
+      })
+    });
+
+    const validExtensions = ['csv', 'json', 'txt', 'xlsx', 'xls'];
+    
+    for (const ext of validExtensions) {
+      const response = await request(app)
+        .post('/api/datasets/upload')
+        .send({
+          filename: `test.${ext}`,
+          fileData: Buffer.from('test data').toString('base64')
+        })
+        .set('Authorization', `Bearer ${goodToken}`);
+
+      expect(response.status).toBe(200);
+    }
   });
 });

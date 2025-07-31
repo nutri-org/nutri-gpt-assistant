@@ -1,0 +1,89 @@
+~/workspace$ NPM TEST 
+bash: NPM: command not found
+~/workspace$ npm test
+
+> nodejs@1.0.0 test
+> cross-env NODE_ENV=test jest --runInBand --detectOpenHandles --setupFiles ./jest.setup.js --watchAll=false
+
+ FAIL  tests/datasets.test.js
+  ● Datasets Routes › rejects files larger than 10 MB
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "File too large"
+    Received: undefined
+
+      220 |
+      221 |     expect(response.status).toBe(413);
+    > 222 |     expect(response.body.error).toBe('File too large');
+          |                                 ^
+      223 |     expect(response.body.details).toContain('Maximum file size is 10 MB');
+      224 |   });
+      225 |
+
+      at Object.toBe (tests/datasets.test.js:222:33)
+
+  ● Datasets Routes › rejects invalid file types
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 500
+
+      233 |       .set('Authorization', `Bearer ${goodToken}`);
+      234 |
+    > 235 |     expect(response.status).toBe(400);
+          |                             ^
+      236 |     expect(response.body.error).toBe('Invalid file type');
+      237 |     expect(response.body.details).toContain('Allowed file types: csv, json, txt, xlsx, xls');
+      238 |   });
+
+      at Object.toBe (tests/datasets.test.js:235:29)
+
+ PASS  tests/chat.test.js
+  ● Console
+
+    console.error
+      Chat endpoint error: Error: UPSTREAM_ERROR
+          at Object.<anonymous> (/home/runner/workspace/tests/chat.test.js:120:47)
+          at Promise.finally.completed (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:1559:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:1499:10)
+          at _callCircusTest (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:1009:40)
+          at processTicksAndRejections (node:internal/process/task_queues:105:5)
+          at _runTest (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:949:3)
+          at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:839:13)
+          at _runTestsForDescribeBlock (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:829:11)
+          at run (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:757:3)
+          at runAndTransformResultsToJestFormat (/home/runner/workspace/node_modules/jest-circus/build/jestAdapterInit.js:1920:21)
+          at jestAdapter (/home/runner/workspace/node_modules/jest-circus/build/runner.js:101:19)
+          at runTestInternal (/home/runner/workspace/node_modules/jest-runner/build/index.js:275:16)
+          at runTest (/home/runner/workspace/node_modules/jest-runner/build/index.js:343:7)
+
+      45 |
+      46 |   } catch (error) {
+    > 47 |     console.error('Chat endpoint error:', error);
+         |             ^
+      48 |
+      49 |     if (error.message === 'UPSTREAM_ERROR') {
+      50 |       return res.status(500).json({ error: 'UPSTREAM_ERROR' });
+
+      at error (server/routes/chat.js:47:13)
+
+ PASS  tests/settings.test.js
+ PASS  tests/billing.test.js
+ PASS  tests/quota.test.js
+ PASS  tests/auth.test.js
+ PASS  tests/health.test.js
+
+Test Suites: 1 failed, 6 passed, 7 total
+Tests:       2 failed, 24 passed, 26 total
+Snapshots:   0 total
+Time:        2.863 s
+Ran all test suites.
+npm notice
+npm notice New major version of npm available! 10.9.2 -> 11.5.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.5.2
+npm notice To update run: npm install -g npm@11.5.2
+npm notice
+~/workspace$ 
