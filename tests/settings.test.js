@@ -35,7 +35,7 @@ jest.mock('../server/lib/supabase', () => ({
 }));
 
 // Mock auth middleware with correct path
-jest.mock('../../middleware/auth', () => {
+jest.mock('../middleware/auth', () => {
   return jest.fn(() => (req, res, next) => {
     req.user = { id: 'test-user-id', plan: 'limited' };
     next();
