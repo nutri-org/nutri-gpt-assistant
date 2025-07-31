@@ -65,8 +65,29 @@ describe('Datasets Routes', () => {
           return res.status(400).json({ error: 'filename and fileData are required' });
         }
 
+        // File size validation (10 MB limit)
+        const maxSizeBytes = 10 * 1024 * 1024; // 10 MB
+        const fileSizeBytes = Math.ceil(fileData.length * 0.75); // base64 to bytes approximation
+        
+        if (fileSizeBytes > maxSizeBytes) {
+          return res.status(413).json({ 
+            error: 'File too large', 
+            details: `Maximum file size is 10 MB. Your file is approximately ${Math.round(fileSizeBytes / 1024 / 1024)} MB.` 
+          });
+        }
+
+        // File type validation
+        const fileExtension = filename.split('.').pop()?.toLowerCase();
+        const allowedExtensions = ['csv', 'json', 'txt', 'xlsx', 'xls'];
+        
+        if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+          return res.status(400).json({ 
+            error: 'Invalid file type', 
+            details: `Allowed file types: ${allowedExtensions.join(', ')}` 
+          });
+        }
+
         const userId = req.user.id;
-        const fileExtension = filename.split('.').pop();
         const storagePath = `${userId}/${Date.now()}_${filename}`;
 
         // Mock supabase calls
