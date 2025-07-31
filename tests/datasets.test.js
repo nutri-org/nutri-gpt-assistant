@@ -228,8 +228,9 @@ describe('Datasets Routes', () => {
   });
 
   test('rejects files larger than 10 MB', async () => {
-    // Create a large base64 string (simulate > 10 MB file)
-    const largeFileData = 'a'.repeat(15 * 1024 * 1024); // ~15 MB in base64
+    // Create a large base64 string that will exceed 10MB when decoded
+    // We need 10MB * 4/3 (base64 overhead) = ~13.3MB in base64 to exceed 10MB limit
+    const largeFileData = 'a'.repeat(14 * 1024 * 1024); // 14MB in base64 = ~10.5MB decoded
 
     const response = await request(app)
       .post('/api/datasets/upload')
