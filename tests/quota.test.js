@@ -1,3 +1,4 @@
+
 // tests/quota.test.js   ← replace the whole file with this
 const request  = require('supertest');
 const express  = require('express');
@@ -7,19 +8,18 @@ const mockSingle = jest.fn();
 const mockRpc = jest.fn(() => Promise.resolve({ error: null }));
 
 jest.mock('../server/lib/supabase', () => {
-  // one self‑returning stub object that properly chains
-  const stub = {
-    /* chainable helpers – always return the same stub */
-    from   : jest.fn(() => stub),
-    select : jest.fn(() => stub),
-    eq     : jest.fn(() => stub),
-    update : jest.fn(() => stub),
-    /* leaf helpers we override in each test */
-    single : mockSingle,
+  // Create a proper chain that returns mockSingle at the end
+  const createChain = () => ({
+    from   : jest.fn(() => createChain()),
+    select : jest.fn(() => createChain()),
+    eq     : jest.fn(() => createChain()),
+    update : jest.fn(() => createChain()),
+    single : mockSingle,  // This is the terminal call
     rpc    : mockRpc
-  };
-  return stub;
+  });
+  return createChain();
 });
+
 const supabase = require('../server/lib/supabase');
 const quota    = require('../middleware/quota');
 
