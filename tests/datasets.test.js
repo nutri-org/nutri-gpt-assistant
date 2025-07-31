@@ -228,9 +228,10 @@ describe('Datasets Routes', () => {
   });
 
   test('rejects files larger than 10 MB', async () => {
-    // Create a large base64 string that will exceed 10MB when decoded
-    // We need 10MB * 4/3 (base64 overhead) = ~13.3MB in base64 to exceed 10MB limit
-    const largeFileData = 'a'.repeat(14 * 1024 * 1024); // 14MB in base64 = ~10.5MB decoded
+    // Create a base64 string that will definitely exceed 10MB when calculated
+    // Our calculation: fileSizeBytes = Math.ceil(fileData.length * 0.75)
+    // So we need fileData.length > 10MB / 0.75 = ~13.33MB
+    const largeFileData = 'a'.repeat(15 * 1024 * 1024); // 15MB in base64 = 11.25MB calculated
 
     const response = await request(app)
       .post('/api/datasets/upload')
@@ -239,6 +240,10 @@ describe('Datasets Routes', () => {
         fileData: largeFileData
       })
       .set('Authorization', `Bearer ${goodToken}`);
+
+    // Debug logging to see actual response
+    console.log('Response status:', response.status);
+    console.log('Response body:', response.body);
 
     expect(response.status).toBe(413);
     expect(response.body.error).toBe('File too large');
