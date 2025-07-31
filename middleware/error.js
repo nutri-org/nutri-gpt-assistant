@@ -5,7 +5,7 @@ const logger = require('../server/lib/logger');
  * Centralized error handling middleware
  * Provides consistent JSON error responses and logging
  */
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   // Log the error with context
   logger.error('Request error', {
     error: err.message,
