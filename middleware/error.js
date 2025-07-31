@@ -1,4 +1,3 @@
-
 const logger = require('../server/lib/logger');
 
 /**
@@ -70,7 +69,7 @@ const getErrorCodeForStatus = (status) => {
     502: 'BAD_GATEWAY',
     503: 'SERVICE_UNAVAILABLE'
   };
-  
+
   return statusCodes[status] || 'UNKNOWN_ERROR';
 };
 
