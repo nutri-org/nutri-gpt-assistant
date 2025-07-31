@@ -1,0 +1,54 @@
+~/workspace$ npm test
+
+> nodejs@1.0.0 test
+> cross-env NODE_ENV=test jest --runInBand --detectOpenHandles --setupFiles ./jest.setup.js --watchAll=false
+
+ PASS  tests/quota.test.js
+ FAIL  tests/datasets.test.js (45.19 s)
+  ● Datasets Routes › uploads dataset successfully
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      49 |   });
+      50 |
+    > 51 |   test('uploads dataset successfully', async () => {
+         |   ^
+      52 |     supabase.storage.from().upload.mockResolvedValue({
+      53 |       data: { path: 'test-user-id/dataset.csv' },
+      54 |       error: null
+
+      at test (tests/datasets.test.js:51:3)
+      at Object.describe (tests/datasets.test.js:21:1)
+
+  ● Datasets Routes › handles upload errors
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      67 |   });
+      68 |
+    > 69 |   test('handles upload errors', async () => {
+         |   ^
+      70 |     supabase.storage.from().upload.mockResolvedValue({
+      71 |       data: null,
+      72 |       error: { message: 'Storage error' }
+
+      at test (tests/datasets.test.js:69:3)
+      at Object.describe (tests/datasets.test.js:21:1)
+
+  ● Datasets Routes › requires file attachment
+
+    thrown: "Exceeded timeout of 15000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      83 |   });
+      84 |
+    > 85 |   test('requires file attachment', async () => {
+         |   ^
+      86 |     const response = await request(app)
+      87 |       .post('/api/datasets/upload')
+      88 |       .field('name', 'test-dataset')
+
+      at test (tests/datasets.test.js:85:3)
+      at Object.describe (tests/datasets.test.js:21:1)
