@@ -1,19 +1,17 @@
-
 const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
 // Mock Supabase
 jest.mock('../server/lib/supabase', () => ({
+  from: jest.fn(() => ({
+    insert: jest.fn()
+  })),
   storage: {
     from: jest.fn(() => ({
       upload: jest.fn()
     }))
-  },
-  from: jest.fn(() => ({
-    insert: jest.fn()
-  })),
-  rpc: jest.fn(() => Promise.resolve({ error: null }))
+  }
 }));
 
 const supabase = require('../server/lib/supabase');

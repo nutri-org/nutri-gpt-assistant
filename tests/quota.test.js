@@ -14,7 +14,7 @@ jest.mock('../server/lib/supabase', () => ({
         single: mockSingle
       })),
       update: jest.fn(() => ({
-        eq: jest.fn()
+        eq: jest.fn(() => Promise.resolve({ error: null }))
       }))
     }))
   })),

@@ -10,23 +10,15 @@ jest.mock('../server/lib/supabase', () => ({
         single: jest.fn()
       }))
     })),
-    upsert: jest.fn(() => ({
-      select: jest.fn(() => ({
-        single: jest.fn()
-      }))
-    })),
+    insert: jest.fn(() => Promise.resolve({ error: null })),
     update: jest.fn(() => ({
-      eq: jest.fn(() => ({
-        select: jest.fn(() => ({
-          single: jest.fn()
-        }))
-      }))
+      eq: jest.fn(() => Promise.resolve({ error: null }))
     })),
     delete: jest.fn(() => ({
-      eq: jest.fn()
-    }))
-  })),
-  rpc: jest.fn(() => Promise.resolve({ error: null }))
+      eq: jest.fn(() => Promise.resolve({ error: null }))
+    })),
+    upsert: jest.fn(() => Promise.resolve({ error: null }))
+  }))
 }));
 
 const supabase = require('../server/lib/supabase');
