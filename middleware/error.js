@@ -80,7 +80,7 @@ const getErrorCodeForStatus = (status) => {
 const createError = (status, message, code = null) => {
   const error = new Error(message);
   error.status = status;
-  error.code = code || getErrorCodeForStatus(status);
+  error.code = code !== null ? code : getErrorCodeForStatus(status);
   return error;
 };
 
