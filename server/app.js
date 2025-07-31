@@ -14,6 +14,6 @@ app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 
 // Routes
 app.use('/api', healthRoutes);
-app.use('/api', chatRoutes);
+app.use('/api/chat', chatRoutes);
 
 module.exports = app;   // ◀── ONLY the app
