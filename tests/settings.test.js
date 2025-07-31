@@ -1,3 +1,4 @@
+
 const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
@@ -26,9 +27,20 @@ jest.mock('../server/lib/supabase', () => ({
           single: mockUpdate
         }))
       }))
+    })),
+    delete: jest.fn(() => ({
+      eq: jest.fn(() => Promise.resolve({ error: null }))
     }))
   }))
 }));
+
+// Mock auth middleware with correct path
+jest.mock('../../middleware/auth', () => {
+  return jest.fn(() => (req, res, next) => {
+    req.user = { id: 'test-user-id', plan: 'limited' };
+    next();
+  });
+});
 
 const settingsRoutes = require('../server/routes/settings');
 
@@ -114,7 +126,7 @@ describe('Settings Routes', () => {
     });
 
     const res = await request(app)
-      .post('/api/settings')
+      .put('/api/settings')
       .set('Authorization', `Bearer ${goodToken}`)
       .send(newSettings);
 

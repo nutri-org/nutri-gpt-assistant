@@ -19,35 +19,36 @@ jest.mock('multer', () => {
   return multer;
 });
 
+// Mock functions that will be reused
+const mockUpload = jest.fn();
+const mockGetPublicUrl = jest.fn();
+const mockInsert = jest.fn();
+const mockSelect = jest.fn();
+const mockSingle = jest.fn();
+
 // Complete Supabase mock including storage with getPublicUrl
 jest.mock('../server/lib/supabase', () => ({
   from: jest.fn(() => ({
-    insert: jest.fn(() => ({
-      select: jest.fn(() => ({
-        single: jest.fn()
-      }))
-    }))
+    insert: mockInsert
   })),
   storage: {
     from: jest.fn(() => ({
-      upload: jest.fn(),
-      getPublicUrl: jest.fn(() => ({
-        data: { publicUrl: 'https://example.com/file.csv' }
-      }))
+      upload: mockUpload,
+      getPublicUrl: mockGetPublicUrl
     }))
   }
 }));
 
-// Mock auth middleware
-jest.mock('../middleware/auth', () => {
+// Mock auth middleware with correct path
+jest.mock('../../middleware/auth', () => {
   return jest.fn(() => (req, res, next) => {
     req.user = { id: 'test-user-id', plan: 'limited' };
     next();
   });
 });
 
-// Mock quota middleware
-jest.mock('../middleware/quota', () => (req, res, next) => next());
+// Mock quota middleware with correct path
+jest.mock('../../middleware/quota', () => (req, res, next) => next());
 
 const supabase = require('../server/lib/supabase');
 const datasetsRoutes = require('../server/routes/datasets');
@@ -65,6 +66,12 @@ describe('Datasets Routes', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUpload.mockReset();
+    mockGetPublicUrl.mockReset();
+    mockInsert.mockReset();
+    mockSelect.mockReset();
+    mockSingle.mockReset();
+
     goodToken = jwt.sign(
       { id: 'test-user-id', plan: 'limited' },
       process.env.JWT_SECRET || 'test-secret'
@@ -83,19 +90,27 @@ describe('Datasets Routes', () => {
   });
 
   test('uploads dataset successfully', async () => {
-    supabase.storage.from().upload.mockResolvedValue({
+    mockUpload.mockResolvedValue({
       data: { path: 'test-user-id/dataset.csv' },
       error: null
     });
 
-    supabase.from().insert().select().single.mockResolvedValue({
-      data: {
-        id: 'test-id',
-        filename: 'test.csv',
-        url: 'https://example.com/file.csv',
-        created_at: new Date().toISOString()
-      },
-      error: null
+    mockGetPublicUrl.mockReturnValue({
+      data: { publicUrl: 'https://example.com/file.csv' }
+    });
+
+    mockInsert.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: 'test-id',
+            filename: 'test.csv',
+            url: 'https://example.com/file.csv',
+            created_at: new Date().toISOString()
+          },
+          error: null
+        })
+      })
     });
 
     const response = await request(app)
@@ -112,7 +127,7 @@ describe('Datasets Routes', () => {
   });
 
   test('handles upload errors', async () => {
-    supabase.storage.from().upload.mockResolvedValue({
+    mockUpload.mockResolvedValue({
       data: null,
       error: { message: 'Storage error' }
     });
