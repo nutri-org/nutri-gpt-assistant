@@ -41,7 +41,8 @@ const errorHandler = (err, req, res, _next) => {
   } else if (err.status && err.status >= 400 && err.status < 600) {
     // Handle errors with explicit status
     status = err.status;
-    errorCode = err.code || getErrorCodeForStatus(status);
+    // Prioritize explicit error code over status-based code
+    errorCode = err.code ? err.code : getErrorCodeForStatus(status);
     message = err.message || message;
   }
 

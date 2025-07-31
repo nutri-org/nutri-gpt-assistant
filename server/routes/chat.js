@@ -44,7 +44,7 @@ router.post('/', asyncHandler(async (req, res) => {
 
     return res.json(response);
 
-  } catch (error) {
+  } catch {
     // Let centralized error handler manage this
     throw createError(500, 'Failed to process chat request', 'UPSTREAM_ERROR');
   }
