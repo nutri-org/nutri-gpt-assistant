@@ -4,8 +4,11 @@ const express  = require('express');
 const quota    = require('../middleware/quota');
 
 // ────── Supabase mock ──────
+const mockSingle = jest.fn();
+const mockRpc = jest.fn(() => Promise.resolve({ error: null }));
+
 jest.mock('../server/lib/supabase', () => {
-  // one self‑returning stub object
+  // one self‑returning stub object that properly chains
   const stub = {
     /* chainable helpers – always return the same stub */
     from   : jest.fn(() => stub),
@@ -13,8 +16,8 @@ jest.mock('../server/lib/supabase', () => {
     eq     : jest.fn(() => stub),
     update : jest.fn(() => stub),
     /* leaf helpers we override in each test */
-    single : jest.fn(),
-    rpc    : jest.fn(() => Promise.resolve({ error: null }))
+    single : mockSingle,
+    rpc    : mockRpc
   };
   return stub;
 });
@@ -30,13 +33,14 @@ app.post('/test', (_req, res) => res.json({ ok: true }));
 // ────── test helpers ──────
 beforeEach(() => {
   jest.clearAllMocks();               // wipe call history
-  supabase.single.mockReset();        // keep the fn but clear behaviour
+  mockSingle.mockReset();             // keep the fn but clear behaviour
+  mockRpc.mockReturnValue(Promise.resolve({ error: null }));
 });
 afterAll(() => jest.resetAllMocks()); // tidy up for Jest
 
 /* ────── Tests ────── */
 test('allows request with sufficient credits', async () => {
-  supabase.single.mockResolvedValueOnce({
+  mockSingle.mockResolvedValueOnce({
     data: { remaining_credits: 100 }, error: null
   });
 
@@ -46,7 +50,7 @@ test('allows request with sufficient credits', async () => {
 });
 
 test('blocks request with insufficient credits', async () => {
-  supabase.single.mockResolvedValueOnce({
+  mockSingle.mockResolvedValueOnce({
     data: { remaining_credits: 0 }, error: null
   });
 
