@@ -1,0 +1,93 @@
+~/workspace$ npm test
+
+> nodejs@1.0.0 test
+> cross-env NODE_ENV=test jest --runInBand --detectOpenHandles --setupFiles ./jest.setup.js --watchAll=false
+
+ FAIL  tests/chat.test.js
+  ● POST /api/chat › should return 200 for meal_plan_strict mode with structured response
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      57 |       });
+      58 |
+    > 59 |     expect(res.status).toBe(200);
+         |                        ^
+      60 |     expect(res.body.role).toBe('assistant');
+      61 |     ['breakfast','lunch','dinner','snacks'].forEach(k =>
+      62 |       expect(res.body.content).toHaveProperty(k));
+
+      at Object.toBe (tests/chat.test.js:59:24)
+
+  ● POST /api/chat › should return 200 for goal_motivation mode with text response
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      80 |       });
+      81 |
+    > 82 |     expect(res.status).toBe(200);
+         |                        ^
+      83 |     expect(res.body.role).toBe('assistant');
+      84 |     expect(typeof res.body.content).toBe('string');
+      85 |     expect(res.body.content.length).toBeGreaterThan(0);
+
+      at Object.toBe (tests/chat.test.js:82:24)
+
+  ● POST /api/chat › should return 422 for allergen conflict
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 422
+    Received: 404
+
+      112 |       });
+      113 |
+    > 114 |     expect(res.status).toBe(422);
+          |                        ^
+      115 |     expect(res.body.error).toBe('ALLERGEN_CONFLICT');
+      116 |   });
+      117 |
+
+      at Object.toBe (tests/chat.test.js:114:24)
+
+  ● POST /api/chat › should return 500 for OpenAI API failure
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 500
+    Received: 404
+
+      130 |       });
+      131 |
+    > 132 |     expect(res.status).toBe(500);
+          |                        ^
+      133 |     expect(res.body.error).toBe('UPSTREAM_ERROR');
+      134 |   });
+      135 |
+
+      at Object.toBe (tests/chat.test.js:132:24)
+
+  ● POST /api/chat › should default to meal_plan_strict when mode is not provided
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      153 |       });
+      154 |
+    > 155 |     expect(res.status).toBe(200);
+          |                        ^
+      156 |     expect(res.body.content).toHaveProperty('breakfast');
+      157 |   });
+      158 |
+
+      at Object.toBe (tests/chat.test.js:155:24)
+
+ PASS  tests/datasets.test.js
+  ● Console
