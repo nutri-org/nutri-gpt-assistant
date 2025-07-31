@@ -3,17 +3,51 @@ const request = require('supertest');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 
-// Complete Supabase mock including storage
+// Mock multer to handle file uploads
+jest.mock('multer', () => {
+  const multer = jest.fn(() => ({
+    single: jest.fn(() => (req, res, next) => {
+      if (req.body.filename && req.body.fileData) {
+        req.file = {
+          originalname: req.body.filename,
+          buffer: Buffer.from(req.body.fileData, 'base64')
+        };
+      }
+      next();
+    })
+  }));
+  return multer;
+});
+
+// Complete Supabase mock including storage with getPublicUrl
 jest.mock('../server/lib/supabase', () => ({
   from: jest.fn(() => ({
-    insert: jest.fn()
+    insert: jest.fn(() => ({
+      select: jest.fn(() => ({
+        single: jest.fn()
+      }))
+    }))
   })),
   storage: {
     from: jest.fn(() => ({
-      upload: jest.fn()
+      upload: jest.fn(),
+      getPublicUrl: jest.fn(() => ({
+        data: { publicUrl: 'https://example.com/file.csv' }
+      }))
     }))
   }
 }));
+
+// Mock auth middleware
+jest.mock('../../middleware/auth', () => {
+  return jest.fn(() => (req, res, next) => {
+    req.user = { id: 'test-user-id', plan: 'limited' };
+    next();
+  });
+});
+
+// Mock quota middleware
+jest.mock('../../middleware/quota', () => (req, res, next) => next());
 
 const supabase = require('../server/lib/supabase');
 const datasetsRoutes = require('../server/routes/datasets');
@@ -54,16 +88,27 @@ describe('Datasets Routes', () => {
       error: null
     });
 
-    supabase.from().insert.mockResolvedValue({ error: null });
+    supabase.from().insert().select().single.mockResolvedValue({
+      data: {
+        id: 'test-id',
+        filename: 'test.csv',
+        url: 'https://example.com/file.csv',
+        created_at: new Date().toISOString()
+      },
+      error: null
+    });
 
     const response = await request(app)
       .post('/api/datasets/upload')
-      .attach('file', Buffer.from('csv,data\n1,test'), 'test.csv')
-      .field('name', 'test-dataset')
+      .send({
+        filename: 'test.csv',
+        fileData: Buffer.from('csv,data\n1,test').toString('base64')
+      })
       .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
+    expect(response.body.dataset.filename).toBe('test.csv');
   });
 
   test('handles upload errors', async () => {
@@ -74,21 +119,26 @@ describe('Datasets Routes', () => {
 
     const response = await request(app)
       .post('/api/datasets/upload')
-      .attach('file', Buffer.from('csv,data'), 'test.csv')
-      .field('name', 'test-dataset')
+      .send({
+        filename: 'test.csv',
+        fileData: Buffer.from('csv,data').toString('base64')
+      })
       .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(500);
-    expect(response.body.error).toBe('UPLOAD_FAILED');
+    expect(response.body.error).toBe('Upload failed');
   });
 
-  test('requires file attachment', async () => {
+  test('requires file data', async () => {
     const response = await request(app)
       .post('/api/datasets/upload')
-      .field('name', 'test-dataset')
+      .send({
+        filename: 'test-dataset'
+        // missing fileData
+      })
       .set('Authorization', `Bearer ${goodToken}`);
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe('NO_FILE');
+    expect(response.body.error).toBe('filename and fileData are required');
   });
 });
