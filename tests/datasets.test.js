@@ -51,7 +51,7 @@ describe('Datasets Routes', () => {
     app.use(express.json({ limit: '20mb' })); // Allow large payloads for testing
     
     // Add error handling middleware
-    app.use((err, req, res, next) => {
+    app.use((err, req, res, _next) => {
       console.log('Error middleware caught:', err);
       res.status(500).json({ error: 'Internal error' });
     });
