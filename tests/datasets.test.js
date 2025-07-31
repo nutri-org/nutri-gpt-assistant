@@ -48,7 +48,7 @@ describe('Datasets Routes', () => {
   beforeAll(() => {
     // Create isolated test app
     app = express();
-    app.use(express.json());
+    app.use(express.json({ limit: '20mb' })); // Allow large payloads for testing
     
     // Add error handling middleware
     app.use((err, req, res, next) => {
