@@ -1,0 +1,40 @@
+Symptoms
+Each test in quota.test.js hits Jest’s 15 000 ms timeout.
+
+If the timeout is raised, the request still never resolves.
+
+The Express route is never reached (verified by adding a console.log() in app.post('/test' …)).
+
+What we have already tried
+Ensured the promise returned by supabase.single.mockResolvedValueOnce() is resolving immediately with valid data.
+
+Re‑structured the stub so every chainable helper (from, select, eq, update) always returns the same stub, and the leaf helper single returns the promise above.
+
+Confirmed (with a dummy script) that calling
+await supabase.from().select().eq().single() does resolve correctly in isolation.
+
+Added an afterAll() hook to remove any possible open handles.
+
+Confirmed that moving the quota middleware out (app.use(quota)) makes the hanging disappear, so the problem is inside the middleware or its interaction with the stub.
+
+Hypotheses
+await supabase…single() never settles inside the middleware:
+although the stub returns a resolved promise, Jest’s fake‑timer or some internal micro‑task queue might not tick because the promise chain is attached to the same stub object each time.
+
+supabase.rpc('decrement_credit' …) path:
+we return the resolved promise from rpc, but the result of await is destructured into { error: rpcErr }; if our stub returns e.g. { error: null }, destructuring succeeds. However, if rpc throws (because the stub reference is wrong) the await will hang.
+
+There could still be an unawaited promise somewhere in the chain causing the middleware never to call next() or res.*.
+
+Ask
+Please do not make any automated edits.
+Instead, could you:
+
+Review the quota stub & middleware above and confirm whether the promise chain will actually resolve.
+Is returning the same stub object from every chain helper acceptable, or should each helper return a fresh object?
+
+Suggest the minimal change (to either the stub or the middleware) that would let each test complete in < 15 s.
+
+If you believe the issue lies elsewhere (e.g., supertest usage, Express async error handling, or need for await quota(req,res,…) in tests), outline that reasoning.
+
+We will implement the suggestion manually once we understand the ro

@@ -1,0 +1,75 @@
+Context
+-------
+• We are working on the Jest test‑suite for the Node/Express project.
+• All ESLint errors are now fixed.
+• The only failing suite at this point is `tests/quota.test.js` (and the downstream failures it blocks).
+• Current version of `tests/quota.test.js` is:
+
+```js
+const request  = require('supertest');
+const express  = require('express');
+const quota    = require('../middleware/quota');
+
+// ---------- Supabase stub (single, self‑returning object) ----------
+jest.mock('../server/lib/supabase', () => {
+  // create a single stub object
+  const stub = {
+    from  : jest.fn(() => stub),
+    select: jest.fn(() => stub),
+    eq    : jest.fn(() => stub),
+    update: jest.fn(() => stub),
+
+    // leaf helpers we override per‑test
+    single: jest.fn(),                       // will get .mockResolvedValueOnce(...)
+    rpc   : jest.fn(() => Promise.resolve({ error: null }))
+  };
+  return stub;
+});
+const supabase = require('../server/lib/supabase');
+
+// ---------- express app under test ----------
+const app = express();
+app.use(express.json());
+// fake auth
+app.use((req, _res, next) => {
+  req.user = { id: 'test-user-id' };
+  next();
+});
+app.use(quota);
+app.post('/test', (req, res) => res.json({ success: true }));
+
+// ---------- Tests ----------
+test('allows request with sufficient credits', async () => {
+  supabase.single.mockResolvedValueOnce({
+    data: { plan: 'limited', remaining_credits: 100 },
+    error: null
+  });
+
+  const res = await request(app).post('/test').send({});
+  expect(res.status).toBe(200);
+});
+
+test('blocks request with insufficient credits', async () => {
+  supabase.single.mockResolvedValueOnce({
+    data: { plan: 'limited', remaining_credits: 0 },
+    error: null
+  });
+
+  const res = await request(app).post('/test').send({});
+  expect(res.status).toBe(403);
+});
+
+test('allows unlimited plan users', async () => {
+  supabase.single.mockResolvedValueOnce({
+    data: { plan: 'unlimited', remaining_credits: null },
+    error: null
+  });
+
+  const res = await request(app).post('/test').send({});
+  expect(res.status).toBe(200);
+});
+
+afterAll(async () => {
+  // close any open handles (supertest does not create a server, but be safe)
+  await new Promise(r => setImmediate(r));
+});
