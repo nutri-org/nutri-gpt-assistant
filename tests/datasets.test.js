@@ -50,14 +50,19 @@ describe('Datasets Routes', () => {
     app = express();
     app.use(express.json());
     
-    // Add auth middleware mock
-    app.use((req, res, next) => {
+    // Mock auth middleware to match real behavior
+    const mockAuth = () => (req, res, next) => {
       req.user = { id: 'test-user-id', plan: 'limited' };
       next();
-    });
+    };
     
-    // Define the route directly in test to avoid middleware issues
-    app.post('/api/datasets/upload', async (req, res) => {
+    // Mock quota middleware to match real behavior  
+    const mockQuota = (req, res, next) => {
+      next();
+    };
+    
+    // Use the same middleware chain as real route
+    app.post('/api/datasets/upload', mockAuth(), mockQuota, async (req, res) => {
       try {
         const { filename, fileData } = req.body;
 
