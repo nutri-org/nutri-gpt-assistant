@@ -1,0 +1,61 @@
+
+> nodejs@1.0.0 test
+> cross-env NODE_ENV=test jest --runInBand --detectOpenHandles --setupFiles ./jest.setup.js --watchAll=false
+
+ FAIL  tests/datasets.test.js
+  ● Console
+
+    console.log
+      Error middleware caught: PayloadTooLargeError: request entity too large
+          at readStream (/home/runner/workspace/node_modules/raw-body/index.js:163:17)
+          at getRawBody (/home/runner/workspace/node_modules/raw-body/index.js:116:12)
+          at read (/home/runner/workspace/node_modules/body-parser/lib/read.js:74:3)
+          at jsonParser (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:125:5)
+          at Layer.handleRequest (/home/runner/workspace/node_modules/router/lib/layer.js:152:17)
+          at trimPrefix (/home/runner/workspace/node_modules/router/index.js:342:13)
+          at /home/runner/workspace/node_modules/router/index.js:297:9
+          at processParams (/home/runner/workspace/node_modules/router/index.js:582:12)
+          at next (/home/runner/workspace/node_modules/router/index.js:291:5)
+          at Function.handle (/home/runner/workspace/node_modules/router/index.js:186:3)
+          at Function.handle (/home/runner/workspace/node_modules/express/lib/application.js:177:15)
+          at Server.app (/home/runner/workspace/node_modules/express/lib/express.js:38:9)
+          at Server.emit (node:events:518:28)
+          at parserOnIncoming (node:_http_server:1155:12)
+          at HTTPParser.parserOnHeadersComplete (node:_http_common:117:17) {
+        expected: 15728683,
+        length: 15728683,
+        limit: 102400,
+        type: 'entity.too.large'
+      }
+
+      at log (tests/datasets.test.js:55:15)
+
+    console.log
+      Response status: 500
+
+      at Object.log (tests/datasets.test.js:259:13)
+
+    console.log
+      Response body: { error: 'Internal error' }
+
+      at Object.log (tests/datasets.test.js:260:13)
+
+  ● Datasets Routes › rejects files larger than 10 MB
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 413
+    Received: 500
+
+      260 |     console.log('Response body:', response.body);
+      261 |
+    > 262 |     expect(response.status).toBe(413);
+          |                             ^
+      263 |     expect(response.body.error).toBe('File too large');
+      264 |     expect(response.body.details).toContain('Maximum file size is 10 MB');
+      265 |   });
+
+      at Object.toBe (tests/datasets.test.js:262:29)
+
+ PASS  tests/chat.test.js
+  ● Console
