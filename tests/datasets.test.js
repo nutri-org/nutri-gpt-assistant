@@ -205,4 +205,74 @@ describe('Datasets Routes', () => {
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('filename and fileData are required');
   });
+
+  test('rejects files larger than 10 MB', async () => {
+    // Create a large base64 string (simulate > 10 MB file)
+    const largeFileData = 'a'.repeat(15 * 1024 * 1024); // ~15 MB in base64
+
+    const response = await request(app)
+      .post('/api/datasets/upload')
+      .send({
+        filename: 'large-file.csv',
+        fileData: largeFileData
+      })
+      .set('Authorization', `Bearer ${goodToken}`);
+
+    expect(response.status).toBe(413);
+    expect(response.body.error).toBe('File too large');
+    expect(response.body.details).toContain('Maximum file size is 10 MB');
+  });
+
+  test('rejects invalid file types', async () => {
+    const response = await request(app)
+      .post('/api/datasets/upload')
+      .send({
+        filename: 'malicious.exe',
+        fileData: Buffer.from('test data').toString('base64')
+      })
+      .set('Authorization', `Bearer ${goodToken}`);
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe('Invalid file type');
+    expect(response.body.details).toContain('Allowed file types: csv, json, txt, xlsx, xls');
+  });
+
+  test('accepts valid file types', async () => {
+    mockUpload.mockResolvedValue({
+      data: { path: 'test-user-id/dataset.json' },
+      error: null
+    });
+
+    mockGetPublicUrl.mockReturnValue({
+      data: { publicUrl: 'https://example.com/file.json' }
+    });
+
+    mockInsert.mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: {
+            id: 'test-id',
+            filename: 'data.json',
+            url: 'https://example.com/file.json',
+            created_at: new Date().toISOString()
+          },
+          error: null
+        })
+      })
+    });
+
+    const validExtensions = ['csv', 'json', 'txt', 'xlsx', 'xls'];
+    
+    for (const ext of validExtensions) {
+      const response = await request(app)
+        .post('/api/datasets/upload')
+        .send({
+          filename: `test.${ext}`,
+          fileData: Buffer.from('test data').toString('base64')
+        })
+        .set('Authorization', `Bearer ${goodToken}`);
+
+      expect(response.status).toBe(200);
+    }
+  });
 });
