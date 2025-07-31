@@ -1,4 +1,4 @@
-const stripe = require('stripe')(process.env.STRIPE_API_KEY);
+const stripe = require('stripe')(process.env.STRIPE_API_KEY || 'sk_test_dummy_key_for_development');
 const express = require('express');
 const router = express.Router();
 const supabase = require('../lib/supabase');
