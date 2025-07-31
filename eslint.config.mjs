@@ -44,7 +44,8 @@ export default [
   // Project‑specific tweaks
   {
     rules: {
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }]
+      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "n/no-process-exit": ["error", { allowInSignalHandlers: true }]
     }
   }
 ];
