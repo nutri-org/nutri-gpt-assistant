@@ -23,7 +23,7 @@ const supabase = require('../server/lib/supabase');
 // ────── Express app with mocked auth ──────
 const app = express();
 app.use(express.json());
-app.use((req, res, next) => { req.user = { id: 'test-user-id' }; next(); });
+app.use((req, res, next) => { req.user = { id: 'test-user-id', plan: 'limited' }; next(); });
 app.use(quota);
 app.post('/test', (_req, res) => res.json({ ok: true }));
 
@@ -37,7 +37,7 @@ afterAll(() => jest.resetAllMocks()); // tidy up for Jest
 /* ────── Tests ────── */
 test('allows request with sufficient credits', async () => {
   supabase.single.mockResolvedValueOnce({
-    data: { plan: 'limited', remaining_credits: 100 }, error: null
+    data: { remaining_credits: 100 }, error: null
   });
 
   const res = await request(app).post('/test');
@@ -47,7 +47,7 @@ test('allows request with sufficient credits', async () => {
 
 test('blocks request with insufficient credits', async () => {
   supabase.single.mockResolvedValueOnce({
-    data: { plan: 'limited', remaining_credits: 0 }, error: null
+    data: { remaining_credits: 0 }, error: null
   });
 
   const res = await request(app).post('/test');
@@ -56,11 +56,14 @@ test('blocks request with insufficient credits', async () => {
 });
 
 test('allows unlimited plan users', async () => {
-  supabase.single.mockResolvedValueOnce({
-    data: { plan: 'unlimited', remaining_credits: null }, error: null
-  });
+  // For unlimited users, middleware checks req.user.plan before querying DB
+  const appWithUnlimited = express();
+  appWithUnlimited.use(express.json());
+  appWithUnlimited.use((req, res, next) => { req.user = { id: 'test-user-id', plan: 'unlimited' }; next(); });
+  appWithUnlimited.use(quota);
+  appWithUnlimited.post('/test', (_req, res) => res.json({ ok: true }));
 
-  const res = await request(app).post('/test');
+  const res = await request(appWithUnlimited).post('/test');
   expect(res.status).toBe(200);
   expect(res.body.ok).toBe(true);
 });
