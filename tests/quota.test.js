@@ -7,18 +7,19 @@ const express  = require('express');
 const mockSingle = jest.fn();
 const mockRpc = jest.fn(() => Promise.resolve({ error: null }));
 
-jest.mock('../server/lib/supabase', () => {
-  // Create a proper chain that returns mockSingle at the end
-  const createChain = () => ({
-    from   : jest.fn(() => createChain()),
-    select : jest.fn(() => createChain()),
-    eq     : jest.fn(() => createChain()),
-    update : jest.fn(() => createChain()),
-    single : mockSingle,  // This is the terminal call
-    rpc    : mockRpc
-  });
-  return createChain();
-});
+jest.mock('../server/lib/supabase', () => ({
+  from: jest.fn(() => ({
+    select: jest.fn(() => ({
+      eq: jest.fn(() => ({
+        single: mockSingle
+      })),
+      update: jest.fn(() => ({
+        eq: jest.fn()
+      }))
+    }))
+  })),
+  rpc: mockRpc
+}));
 
 const supabase = require('../server/lib/supabase');
 const quota    = require('../middleware/quota');
