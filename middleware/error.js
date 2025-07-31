@@ -50,9 +50,13 @@ const errorHandler = (err, req, res, _next) => {
   } else if (err.status && err.status >= 400 && err.status < 600) {
     // Handle errors with explicit status
     status = err.status;
-    // Prioritize explicit error code over status-based code
-    errorCode = err.code ? err.code : getErrorCodeForStatus(status);
     message = err.message || message;
+    // Prioritize explicit error code over status-based code
+    if (err.code) {
+      errorCode = err.code;
+    } else {
+      errorCode = getErrorCodeForStatus(status);
+    }
     
     // DEBUG: Log the final values
     console.log('ERROR MIDDLEWARE FINAL:', { status, errorCode, message });
