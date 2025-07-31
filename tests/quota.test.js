@@ -1,7 +1,6 @@
 // tests/quota.test.js   ← replace the whole file with this
 const request  = require('supertest');
 const express  = require('express');
-const quota    = require('../middleware/quota');
 
 // ────── Supabase mock ──────
 const mockSingle = jest.fn();
@@ -22,6 +21,7 @@ jest.mock('../server/lib/supabase', () => {
   return stub;
 });
 const supabase = require('../server/lib/supabase');
+const quota    = require('../middleware/quota');
 
 // ────── Express app with mocked auth ──────
 const app = express();
