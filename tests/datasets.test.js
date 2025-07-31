@@ -50,6 +50,12 @@ describe('Datasets Routes', () => {
     app = express();
     app.use(express.json());
     
+    // Add error handling middleware
+    app.use((err, req, res, next) => {
+      console.log('Error middleware caught:', err);
+      res.status(500).json({ error: 'Internal error' });
+    });
+    
     // Mock auth middleware to match real behavior
     const mockAuth = () => (req, res, next) => {
       req.user = { id: 'test-user-id', plan: 'limited' };
@@ -75,10 +81,13 @@ describe('Datasets Routes', () => {
         const fileSizeBytes = Math.ceil(fileData.length * 0.75); // base64 to bytes approximation
         
         if (fileSizeBytes > maxSizeBytes) {
-          return res.status(413).json({ 
+          console.log('File size check failed:', fileSizeBytes, 'vs', maxSizeBytes);
+          res.status(413);
+          res.json({ 
             error: 'File too large', 
             details: `Maximum file size is 10 MB. Your file is approximately ${Math.round(fileSizeBytes / 1024 / 1024)} MB.` 
           });
+          return;
         }
 
         // File type validation
