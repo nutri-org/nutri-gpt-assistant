@@ -5,6 +5,15 @@ const logger = require('../server/lib/logger');
  * Provides consistent JSON error responses and logging
  */
 const errorHandler = (err, req, res, _next) => {
+  // DEBUG: Log the error object structure
+  console.log('ERROR MIDDLEWARE DEBUG:', {
+    message: err.message,
+    status: err.status,
+    code: err.code,
+    name: err.name,
+    keys: Object.keys(err)
+  });
+
   // Log the error with context
   logger.error('Request error', {
     error: err.message,
@@ -44,6 +53,9 @@ const errorHandler = (err, req, res, _next) => {
     // Prioritize explicit error code over status-based code
     errorCode = err.code ? err.code : getErrorCodeForStatus(status);
     message = err.message || message;
+    
+    // DEBUG: Log the final values
+    console.log('ERROR MIDDLEWARE FINAL:', { status, errorCode, message });
   }
 
   // Send consistent error response
