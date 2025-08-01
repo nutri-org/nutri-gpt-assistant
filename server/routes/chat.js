@@ -1,8 +1,9 @@
 const express = require('express');
+const { asyncHandler, createError } = require('../../middleware/error');
 const openaiClient = require('../lib/openaiClient');
 const { buildPrompt } = require('../lib/buildPrompt');
 const { checkAllergenConflicts } = require('../lib/guardRails');
-const auth = require('../middleware/auth');
+const auth = require('../../middleware/auth');
 const validate = require('../middleware/validate');
 
 const router = express.Router();
@@ -10,7 +11,7 @@ const router = express.Router();
 router.use(auth(true));        // everything below this line is protected
 router.use(validate);
 
-router.post('/chat', async (req, res) => {
+router.post('/', asyncHandler(async (req, res) => {
   try {
     const { mode, messages, context } = req.body;
 
@@ -43,15 +44,10 @@ router.post('/chat', async (req, res) => {
 
     return res.json(response);
 
-  } catch (error) {
-    console.error('Chat endpoint error:', error);
-
-    if (error.message === 'UPSTREAM_ERROR') {
-      return res.status(500).json({ error: 'UPSTREAM_ERROR' });
-    }
-
-    res.status(500).json({ error: 'Internal server error' });
+  } catch {
+    // Let centralized error handler manage this
+    throw createError(500, 'Failed to process chat request', 'UPSTREAM_ERROR');
   }
-});
+}));
 
 module.exports = router;

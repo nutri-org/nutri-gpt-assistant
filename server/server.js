@@ -1,4 +1,3 @@
-
 const express = require('express');
 
 const chatRoutes = require('./routes/chat');
@@ -20,16 +19,13 @@ app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
 
 // Routes
 app.use('/api', healthRoutes);
-app.use('/api/chat', auth(), quota);
-app.use('/api', chatRoutes);
+app.use('/api/chat', auth(), quota(), chatRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/datasets', auth(), datasetsRoutes);
 app.use('/api/assistant/settings', auth(), settingsRoutes);
 
-// Central error middleware (must be last)
-app.use((err, req, res, _next) => {
-  console.error(err);
-  res.status(500).json({ error: 'INTERNAL_SERVER_ERROR' });
-});
+// Centralized error handling middleware
+const { errorHandler } = require('../middleware/error');
+app.use(errorHandler);
 
 module.exports = { app };
