@@ -52,11 +52,7 @@ const errorHandler = (err, req, res, _next) => {
     status = err.status;
     message = err.message || message;
     // Prioritize explicit error code over status-based code
-    if (err.code) {
-      errorCode = err.code;
-    } else {
-      errorCode = getErrorCodeForStatus(status);
-    }
+    errorCode = err.code !== undefined ? err.code : getErrorCodeForStatus(status);
     
     // DEBUG: Log the final values
     console.log('ERROR MIDDLEWARE FINAL:', { status, errorCode, message });
