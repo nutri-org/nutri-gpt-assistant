@@ -12,6 +12,10 @@ jest.mock('../server/lib/guardRails', () => ({
 const openaiClient = require('../server/lib/openaiClient');
 const app          = require('../server/app');        // pure app, no server
 
+// Mount error handler for tests
+const { errorHandler } = require('../middleware/error');
+app.use(errorHandler);
+
 process.env.AUTH_TOKEN = 'test-secret-token';
 
 const request = require('supertest');
