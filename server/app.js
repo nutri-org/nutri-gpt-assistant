@@ -1,35 +1,57 @@
 // /server/app.js
 const express = require('express');
+const helmet  = require('helmet');
+const cors    = require('cors');
 
-const chatRoutes = require('./routes/chat');
+const chatRoutes   = require('./routes/chat');
 const healthRoutes = require('./routes/health');
-const billingRoutes = require('./routes/billing');
-const datasetsRoutes = require('./routes/datasets');
-const settingsRoutes = require('./routes/settings');
-
-// Use the root-level middleware (current project structure has middleware/ at repo root)
-const auth = require('../middleware/auth');
-const { errorHandler } = require('../middleware/error');
 
 const app = express();
 
-// Global middleware
-// NOTE: We keep express.json() here for now to avoid behavioral changes in Task 1.
-//       In Task 4 (Stripe webhook), we will carve out a raw body route for /api/billing/webhook.
+// ───────────────────────── Security headers
+app.disable('x-powered-by');
+app.use(helmet());
+
+// ───────────────────────── CORS (env allow‑list)
+// CORS_ORIGIN can be a comma‑separated list of origins.
+// Behavior:
+//  - If the request has no Origin header (non‑browser / tests / webhooks): allow (no CORS header needed).
+//  - If the request has an Origin: allow only if it is in the allow‑list.
+//  - Preflight (OPTIONS) succeeds only for allowed origins (handled by cors middleware when allowed).
+function parseAllowedOrigins(raw) {
+  if (!raw) return [];
+  return raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.CORS_ORIGIN);
+
+const corsConfig = {
+  origin(origin, cb) {
+    // Allow requests without an Origin header (non‑browser)
+    if (!origin) return cb(null, true);
+    // Allow only listed origins when Origin is present
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    // Deny others by default (no headers, no error → avoids 500s on disallowed preflights)
+    return cb(null, false);
+  },
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsConfig));
+// NOTE: Do NOT register app.options('*', ...) on Express 5 (path-to-regexp no longer accepts '*').
+// Preflight for allowed origins is handled by the cors middleware above.
+
+// ───────────────────────── Parsers
 app.use(express.json());
 
-// Root route for basic ping
+// ───────────────────────── Routes
 app.get('/', (_req, res) => res.send('Nutri-GPT assistant is running'));
+app.use('/api', healthRoutes);      // /api/healthz
+app.use('/api/chat', chatRoutes);   // chat router handles its own auth/validation
 
-// Routes
-app.use('/api', healthRoutes); // exposes /api/healthz
-app.use('/api/chat', chatRoutes);   // let the router handle its own auth/validation chain
-app.use('/api/billing', billingRoutes);
-app.use('/api/datasets', auth(), datasetsRoutes);
-app.use('/api/assistant/settings', auth(), settingsRoutes);
-
-// Centralized error handling
-app.use(errorHandler);
-
-// Export ONLY the app (tests import this)
+// Export only the app (index.js starts the listener)
 module.exports = app;
