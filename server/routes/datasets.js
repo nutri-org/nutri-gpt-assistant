@@ -1,8 +1,10 @@
+// /server/routes/datasets.js
 const express = require('express');
 const router = express.Router();
 const supabase = require('../lib/supabase');
 const auth = require('../../middleware/auth');
 const quota = require('../../middleware/quota');
+const { uploadLimiter } = require('../../middleware/rateLimit');
 
 // Guard for unit tests – if auth middleware not mounted just attach test user
 router.use((req, _res, next) => {
@@ -11,7 +13,7 @@ router.use((req, _res, next) => {
 });
 
 // POST /api/datasets/upload
-router.post('/upload', auth(), quota, async (req, res) => {
+router.post('/upload', auth(), uploadLimiter, quota, async (req, res) => {
   try {
     const { filename, fileData } = req.body;
 
@@ -22,7 +24,7 @@ router.post('/upload', auth(), quota, async (req, res) => {
     // File size validation (10 MB limit)
     const maxSizeBytes = 10 * 1024 * 1024; // 10 MB
     const fileSizeBytes = Math.ceil(fileData.length * 0.75); // base64 to bytes approximation
-    
+
     if (fileSizeBytes > maxSizeBytes) {
       return res.status(413).json({ 
         error: 'File too large', 
@@ -33,7 +35,7 @@ router.post('/upload', auth(), quota, async (req, res) => {
     // File type validation
     const fileExtension = filename.split('.').pop()?.toLowerCase();
     const allowedExtensions = ['csv', 'json', 'txt', 'xlsx', 'xls'];
-    
+
     if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
       return res.status(400).json({ 
         error: 'Invalid file type', 

@@ -1,3 +1,4 @@
+// /server/routes/chat.js
 const express = require('express');
 const { asyncHandler, createError } = require('../../middleware/error');
 const openaiClient = require('../lib/openaiClient');
@@ -5,10 +6,12 @@ const { buildPrompt } = require('../lib/buildPrompt');
 const { checkAllergenConflicts } = require('../lib/guardRails');
 const auth = require('../../middleware/auth');
 const validate = require('../middleware/validate');
+const { chatLimiter } = require('../../middleware/rateLimit');
 
 const router = express.Router();
 
 router.use(auth(true));        // everything below this line is protected
+router.use(chatLimiter);       // rate limit AFTER auth, BEFORE validate
 router.use(validate);
 
 router.post('/', asyncHandler(async (req, res) => {
